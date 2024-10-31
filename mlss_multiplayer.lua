@@ -28,6 +28,7 @@ local PlayerStrings = {
 }
 
 local GameData = {
+    byte_data = {},
     mode = nil,
     front_player = nil,
     battle_player = nil,
@@ -66,6 +67,7 @@ function copyTable(tbl)
 end
 
 function updateGameData()
+    GameData.byte_data = get_byte_data()
     GameData.mode = get_game_mode()
     GameData.front_player = get_front_player()
     GameData.battle_player = get_battle_player()
@@ -82,12 +84,23 @@ function get_other_player(player)
     end
 end
 
-function get_game_mode()
-    local game_paused_flag = bit.check(memory.readbyte(0x0D5E, "IWRAM"), 0)
-    local textbox_flag = bit.check(memory.readbyte(0x03D1, "IWRAM"), 4)  --ALSO BATTLE
-    local cutscene_flag = bit.check(memory.readbyte(0x2451, "IWRAM"), 0) --ALSO BATTLE
+function get_byte_data()
+    return {
+        is_pause_screen_open = bit.check(memory.readbyte(0x0D5E, "IWRAM"), 0),
+        is_dialog_open = bit.check(memory.readbyte(0x03D1, "IWRAM"), 4),       -- active in battle
+        is_movement_disabled = bit.check(memory.readbyte(0x2451, "IWRAM"), 0), -- active in battle
+        front_player_index = memory.readbyte(0x241C, "IWRAM")
+        -- 0x241C M1 L2
+        -- 0x241F M1 L2
+        -- 0x2434 M2 L1
+        -- 0x2437 M2 L1
+    }
+end
 
-    if (game_paused_flag or textbox_flag or cutscene_flag) then
+function get_game_mode()
+    local flags = GameData.byte_data
+
+    if (flags.is_pause_screen_open or flags.is_dialog_open or flags.is_movement_disabled) then
         return GameMode.MENU
     elseif ("BATTLE" == "--- TODO ---") then
         if ("LEVEL_UP" == "--- TODO ---") then
@@ -103,13 +116,9 @@ function get_game_mode()
 end
 
 function get_front_player()
-    local front_player_num = memory.readbyte(0x241C, "IWRAM")
-    -- 0x241C M1 L2
-    -- 0x241F M1 L2
-    -- 0x2434 M2 L1
-    -- 0x2437 M2 L1
+    local flags = GameData.byte_data
 
-    if (front_player_num == 1) then
+    if (flags.front_player_index == 1) then
         return Player.MARIO
     else
         return Player.LUIGI
@@ -229,24 +238,25 @@ function redraw_gui_text()
     local battle_player_text = gui_text["battle_player"]
 
     if (Settings.show_gui_rect) then
-        gui.drawBox(left_offset, top_offset + 3, left_offset + 73, top_offset + 28, 0, "#AA000000")
+        gui.drawBox(left_offset, top_offset + 3, left_offset + 73, top_offset + 28, "#00000000", "#AA000000")
     end
 
     if (mode_text ~= nil) then
-        gui.drawString(left_offset, top_offset + 2, mode_text, "#DD667777", 0, 24, nil, "bold")
+        gui.drawString(left_offset, top_offset + 2, mode_text, "#DD667777", "#00000000", 24, nil, "bold")
     end
 
     if (front_player_text ~= nil) then
-        gui.drawString(left_offset + 30, top_offset + 2, front_player_text, "#DD667777", 0, 24, nil, "bold")
+        gui.drawString(left_offset + 30, top_offset + 2, front_player_text, "#DD667777", "#00000000", 24, nil, "bold")
     end
 
     if (battle_player_text ~= nil) then
-        gui.drawString(left_offset + 50, top_offset + 2, battle_player_text, "#DD667777", 0, 24, nil, "bold")
+        gui.drawString(left_offset + 50, top_offset + 2, battle_player_text, "#DD667777", "#00000000", 24, nil, "bold")
     end
 end
 
 function start_multiplayer()
     print("\n\n\nMLSS Multiplayer started (ID: " .. ProcessID .. ") \n")
+
     while true do
         local old_GameData = copyTable(GameData)
         updateGameData()
@@ -299,10 +309,10 @@ local DefaultXInputs = {
 }
 
 local N64Inputs = {
-    left = "POV1L",
-    right = "POV1R",
-    up = "POV1U",
-    down = "POV1D",
+    left = "POV1L",          -- Dpad Left
+    right = "POV1R",         -- Dpad Right
+    up = "POV1U",            -- Dpad Up
+    down = "POV1D",          -- Dpad Down
     menu = "B9",             -- Start
     menu_confirm = "B2",     -- A
     menu_cancel = "B3",      -- B
