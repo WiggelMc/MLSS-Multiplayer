@@ -117,10 +117,14 @@ function get_front_player()
 end
 
 function get_battle_player()
-    if ("MINIGAME" == "--- TODO ---") then
-        return Player.MARIO
+    if ("ACTUAL BATTLE" == "--- TODO ---") then
+        if ("MARIO'S TURN" == "--- TODO ---") then
+            return Player.MARIO
+        else
+            return Player.LUIGI
+        end
     else
-        return Player.MARIO --TODO: Return current turn
+        return Player.MARIO
     end
 end
 
@@ -181,7 +185,7 @@ function get_input()
         gba_inputs["L"] = joy_inputs[back_map.action_cycle] or false
         gba_inputs["R"] = joy_inputs[front_map.action_cycle] or false
         gba_inputs["Start"] = (joy_inputs[front_map.lead_give] and Settings.allow_lead_give) or
-        (joy_inputs[back_map.lead_take] and Settings.allow_lead_take) or false
+            (joy_inputs[back_map.lead_take] and Settings.allow_lead_take) or false
     end
 
     return gba_inputs
