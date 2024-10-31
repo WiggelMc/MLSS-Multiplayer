@@ -308,6 +308,23 @@ local DefaultXInputs = {
     lead_give = "Y"
 }
 
+local AlternateXInputs = {
+    left = "DpadLeft",
+    right = "DpadRight",
+    up = "DpadUp",
+    down = "DpadDown",
+    menu = "Back",
+    menu_confirm = "A",
+    menu_cancel = "X",
+    menu_start = "Start",
+    menu_L = "LeftShoulder",
+    menu_R = "RightShoulder",
+    action_perform = "A",
+    action_cycle = "RightShoulder",
+    lead_take = "Start",
+    lead_give = "Start"
+}
+
 local N64Inputs = {
     left = "POV1L",          -- Dpad Left
     right = "POV1R",         -- Dpad Right
