@@ -84,9 +84,9 @@ end
 
 function get_game_mode()
     local game_paused_flag = bit.check(memory.readbyte(0x0D5E, "IWRAM"), 0)
-    local textbox_flag = bit.check(memory.readbyte(0x03D1, "IWRAM"), 4) --ALSO BATTLE
+    local textbox_flag = bit.check(memory.readbyte(0x03D1, "IWRAM"), 4)  --ALSO BATTLE
     local cutscene_flag = bit.check(memory.readbyte(0x2451, "IWRAM"), 0) --ALSO BATTLE
-    
+
     if (game_paused_flag or textbox_flag or cutscene_flag) then
         return GameMode.MENU
     elseif ("BATTLE" == "--- TODO ---") then
@@ -103,13 +103,12 @@ function get_game_mode()
 end
 
 function get_front_player()
-    
     local front_player_num = memory.readbyte(0x241C, "IWRAM")
     -- 0x241C M1 L2
     -- 0x241F M1 L2
     -- 0x2434 M2 L1
     -- 0x2437 M2 L1
-    
+
     if (front_player_num == 1) then
         return Player.MARIO
     else
@@ -129,7 +128,7 @@ function get_input()
     local game_mode = GameData.mode
     local joy_inputs = GameData.inputs
     local input_map = Settings.input_map
-    
+
     local gba_inputs = {
         ["Left"] = false,
         ["Right"] = false,
@@ -147,51 +146,50 @@ function get_input()
     local front_map = input_map[front_player]
     local back_player = get_other_player(front_player)
     local back_map = input_map[back_player]
-    
+
     local battle_player = GameData.battle_player
     local battle_map = input_map[battle_player]
-    
+
     local active_map
     if (game_mode == GameMode.MENU or game_mode == GameMode.FIELD) then
         active_map = front_map
     else
         active_map = battle_map
     end
-    
+
     gba_inputs["Left"] = joy_inputs[active_map.left] or false
     gba_inputs["Right"] = joy_inputs[active_map.right] or false
     gba_inputs["Up"] = joy_inputs[active_map.up] or false
     gba_inputs["Down"] = joy_inputs[active_map.down] or false
     gba_inputs["Select"] = joy_inputs[active_map.menu] or false
-    
+
     if (game_mode == GameMode.MENU or game_mode == GameMode.BATTLE or game_mode == GameMode.LEVEL_UP) then
         gba_inputs["L"] = joy_inputs[active_map.menu_L] or false
         gba_inputs["R"] = joy_inputs[active_map.menu_R] or false
         gba_inputs["Start"] = joy_inputs[active_map.menu_start] or false
     end
-    
+
     if (game_mode == GameMode.MENU or game_mode == GameMode.LEVEL_UP) then
         gba_inputs["A"] = joy_inputs[active_map.menu_confirm] or false
         gba_inputs["B"] = joy_inputs[active_map.menu_cancel] or false
-    
     elseif (game_mode == GameMode.BATTLE) then
         gba_inputs["A"] = joy_inputs[input_map[Player.MARIO].action_perform] or false
         gba_inputs["B"] = joy_inputs[input_map[Player.LUIGI].action_perform] or false
-        
-    elseif (game_mode == GameMode.FIELD) then    
+    elseif (game_mode == GameMode.FIELD) then
         gba_inputs["A"] = joy_inputs[front_map.action_perform] or false
         gba_inputs["B"] = joy_inputs[back_map.action_perform] or false
         gba_inputs["L"] = joy_inputs[back_map.action_cycle] or false
         gba_inputs["R"] = joy_inputs[front_map.action_cycle] or false
-        gba_inputs["Start"] = (joy_inputs[front_map.lead_give] and Settings.allow_lead_give) or (joy_inputs[back_map.lead_take] and Settings.allow_lead_take) or false
+        gba_inputs["Start"] = (joy_inputs[front_map.lead_give] and Settings.allow_lead_give) or
+        (joy_inputs[back_map.lead_take] and Settings.allow_lead_take) or false
     end
-    
+
     return gba_inputs
 end
 
 function define_inputs(controller_name, input_table)
     local assigned_input_table = {}
-    for k,v in pairs(input_table) do
+    for k, v in pairs(input_table) do
         assigned_input_table[k] = controller_name .. " " .. v
     end
     return assigned_input_table
@@ -199,19 +197,19 @@ end
 
 function get_gui_text()
     local gui_text = {}
-    
+
     if (Settings.show_mode) then
         gui_text["mode"] = GameModeStrings[GameData.mode]
     end
-    
+
     if (Settings.show_front_player) then
         gui_text["front_player"] = PlayerStrings[GameData.front_player]
     end
-    
+
     if (Settings.show_battle_player) then
         gui_text["battle_player"] = PlayerStrings[GameData.battle_player]
     end
-    
+
     return gui_text
 end
 
@@ -220,35 +218,35 @@ function redraw_gui_text()
     gui.clearGraphics()
     local top_offset = GameData.screen_height - 70
     local left_offset = 20
-    
+
     local gui_text = GameData.gui_text
     local mode_text = gui_text["mode"]
     local front_player_text = gui_text["front_player"]
     local battle_player_text = gui_text["battle_player"]
-    
+
     if (Settings.show_gui_rect) then
-        gui.drawBox(left_offset,top_offset + 3,left_offset + 73,top_offset + 28,0,"#AA000000")
+        gui.drawBox(left_offset, top_offset + 3, left_offset + 73, top_offset + 28, 0, "#AA000000")
     end
-    
+
     if (mode_text ~= nil) then
-        gui.drawString(left_offset,top_offset + 2,mode_text,"#DD667777",0,24,nil,"bold")
+        gui.drawString(left_offset, top_offset + 2, mode_text, "#DD667777", 0, 24, nil, "bold")
     end
-    
+
     if (front_player_text ~= nil) then
-        gui.drawString(left_offset + 30,top_offset + 2,front_player_text,"#DD667777",0,24,nil,"bold")
+        gui.drawString(left_offset + 30, top_offset + 2, front_player_text, "#DD667777", 0, 24, nil, "bold")
     end
-    
+
     if (battle_player_text ~= nil) then
-        gui.drawString(left_offset + 50,top_offset + 2,battle_player_text,"#DD667777",0,24,nil,"bold")
+        gui.drawString(left_offset + 50, top_offset + 2, battle_player_text, "#DD667777", 0, 24, nil, "bold")
     end
 end
 
-function start_multiplayer()    
+function start_multiplayer()
     print("\n\n\nMLSS Multiplayer started (ID: " .. ProcessID .. ") \n")
     while true do
         local old_GameData = copyTable(GameData)
         updateGameData()
-    
+
         if (Settings.log_inputs and (not compareTables(GameData.inputs, old_GameData.inputs))) then
             print("\nInputs:")
             for key, _ in pairs(GameData.inputs) do
@@ -256,11 +254,11 @@ function start_multiplayer()
             end
             print(">\n")
         end
-        
+
         if (GameData.screen_height ~= old_GameData.screen_height or (not compareTables(GameData.gui_text, old_GameData.gui_text))) then
             redraw_gui_text()
         end
-        
+
         joypad.set(get_input())
         emu.frameadvance()
     end
@@ -301,15 +299,15 @@ local N64Inputs = {
     right = "POV1R",
     up = "POV1U",
     down = "POV1D",
-    menu = "B9", -- Start
-    menu_confirm = "B2", -- A
-    menu_cancel = "B3", -- B
-    menu_start = "Z-", -- C Up
-    menu_L = "B7", -- L
-    menu_R = "B8", -- R
-    action_perform = "B2", -- A
-    action_cycle = "B3", -- B
-    lead_take = "Z+", -- C Down
+    menu = "B9",             -- Start
+    menu_confirm = "B2",     -- A
+    menu_cancel = "B3",      -- B
+    menu_start = "Z-",       -- C Up
+    menu_L = "B7",           -- L
+    menu_R = "B8",           -- R
+    action_perform = "B2",   -- A
+    action_cycle = "B3",     -- B
+    lead_take = "Z+",        -- C Down
     lead_give = "RotationZ+" -- C Left
 }
 
