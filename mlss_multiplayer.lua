@@ -1,4 +1,6 @@
 local Settings
+local compareTables, copyTable, updateGameData, get_other_player, get_byte_data, get_game_mode, get_front_player, get_battle_player
+local get_input, define_inputs, get_gui_text, redraw_gui_text, main
 
 math.randomseed(os.time())
 local ProcessID = math.random(10000, 99999)
@@ -254,7 +256,7 @@ function redraw_gui_text()
     end
 end
 
-function start_multiplayer()
+function main()
     print("\n\n\nMLSS Multiplayer started (ID: " .. ProcessID .. ") \n")
 
     while true do
@@ -450,4 +452,4 @@ Settings = {
     show_battle_player = true
 }
 
-start_multiplayer()
+main()

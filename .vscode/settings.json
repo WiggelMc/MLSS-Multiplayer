@@ -10,7 +10,6 @@
         "event"
     ],
     "Lua.diagnostics.disable": [
-        "lowercase-global",
         "trailing-space"
     ]
 }
