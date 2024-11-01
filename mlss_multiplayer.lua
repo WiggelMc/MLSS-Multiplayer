@@ -297,7 +297,7 @@ end)
 
 
 
--- The Recommended Input Layout for X-Input compatible Controllers
+-- The Recommended Input Layout for X-Input compatible Controllers.
 local RecommendedXInputs = {
     left = "DpadLeft",
     right = "DpadRight",
@@ -316,7 +316,7 @@ local RecommendedXInputs = {
 }
 
 -- An alternative Input Layout for X-Input compatible Controllers,
--- which is closer to the original controls of the game
+-- which is closer to the original controls of the game.
 local ClassicXInputs = {
     left = "DpadLeft",
     right = "DpadRight",
@@ -334,7 +334,7 @@ local ClassicXInputs = {
     lead_give = "Start"
 }
 
--- The Recommended Input Layout for the Mayflash N64 Controller Adapter for PC
+-- The Recommended Input Layout for the Mayflash N64 Controller Adapter for PC.
 local RecommendedN64Inputs = {
     left = "POV1L",          -- Dpad Left
     right = "POV1R",         -- Dpad Right
@@ -353,7 +353,7 @@ local RecommendedN64Inputs = {
 }
 
 -- An alternative Input Layout for the Mayflash N64 Controller Adapter for PC,
--- which is closer to the original controls of the game
+-- which is closer to the original controls of the game.
 local ClassicN64Inputs = {
     left = "POV1L",        -- Dpad Left
     right = "POV1R",       -- Dpad Right
@@ -371,45 +371,47 @@ local ClassicN64Inputs = {
     lead_give = "B9"       -- Start
 }
 
--- An Example Layout listing the Controls
+-- An Example Layout listing the Controls.
 local ExampleInputs = {
-    -- Directional Inputs (Dpad) (only for the Front Player or the current Player in Battle)
+    -- Directional Inputs (Dpad) (only for the Front Player or the current Player in Battle).
     left = "None",
     right = "None",
     up = "None",
     down = "None",
 
-    -- Open the Menu (Select)
+    -- Open the Menu (Select).
     menu = "None",
 
-    -- Confirm (A) Button inside of Menus (this includes Dialog Boxes)
+    -- Confirm (A) Button inside of Menus (this includes Dialog Boxes).
     menu_confirm = "None",
 
-    -- Cancel (B) Button inside of Menus (this includes Dialog Boxes)
+    -- Cancel (B) Button inside of Menus (this includes Dialog Boxes).
     menu_cancel = "None",
 
-    -- More info (Start) inside of Menus (used mainly to see Controls in Minigames)
+    -- More info (Start) inside of Menus (used mainly to see Controls in Minigames).
     menu_start = "None",
 
-    -- Scroll Left (L) inside of Menus (this includes the difficulty selection in Battle)
+    -- Scroll Left (L) inside of Menus (this includes the difficulty selection in Battle).
     menu_L = "None",
 
-    -- Scroll Right (R) inside of Menus (this includes the difficulty selection in Battle)
+    -- Scroll Right (R) inside of Menus (this includes the difficulty selection in Battle).
     menu_R = "None",
 
-    -- Perform the current Action in the Overworld (A / B) (Also used as the Attack and Confirm button in Battle)
+    -- Perform the current Action in the Overworld (A / B) (Also used as the Attack and Confirm button in Battle).
     action_perform = "None",
 
-    -- Cycle through the available Actions in the Overworld (R / L)
+    -- Cycle through the available Actions in the Overworld (R / L).
     action_cycle = "None",
 
-    -- Swap with the Front Player, if you are in the back (Start) (can be disabled in Settings)
+    -- Swap with the Front Player, if you are in the back (Start) (can be disabled in Settings).
     lead_take = "None",
 
-    -- Swap with the Rear Player, if you are in the Front (Start) (can be disabled in Settings)
+    -- Swap with the Rear Player, if you are in the Front (Start) (can be disabled in Settings).
     lead_give = "None"
 }
 
+-- Configure the Settings for the Script.
+-- Most Settings can be either `true` or `false`, if you want to change them, replace the existing value (eg. replace `false` with `true` or vice versa).
 Settings = {
     -- Configure Controls for either Player.
     --
@@ -417,31 +419,34 @@ Settings = {
     --
     -- Layouts are defined above, you can modify those or define your own by copying an existing one and renaming it.
     -- If you need multiple devices for a single Player, assign the Layout directly (eg. `[Player.MARIO] = YourInputs`)
-    -- and prepend the Inputs manually with the Device Name (eg. `left = "X1 DpadLeft"`)
+    -- and prepend the Inputs manually with the Device Name (eg. `left = "X1 DpadLeft"`).
+    --
+    -- If you need to find the Device Name or names for Buttons on your Controller, refer to the `log_inputs` Setting.
     input_map = {
         [Player.MARIO] = define_inputs("X1", RecommendedXInputs),
         [Player.LUIGI] = define_inputs("J2", RecommendedN64Inputs)
     },
 
-    -- Allow the Rear Player to Swap
+    -- Allow the Rear Player to Swap.
     allow_lead_take = true,
 
-    -- Allow the Front Player to Swap
+    -- Allow the Front Player to Swap.
     allow_lead_give = true,
 
-    -- Log all Buttons from Input Devices to the Console (useful for input configuration)
+    -- Log all Buttons from Input Devices to the Console (useful for input configuration).
+    -- They are displayed in the format `DeviceName InputName` (eg. `X1 DpadLeft` for the Button `DpadLeft` on Controller `X1`).
     log_inputs = false,
 
-    -- Show rectangle around GUI Display
+    -- Show rectangle around GUI Display.
     show_gui_rect = true,
 
-    -- Show current Mode in GUI Display (on the left)
+    -- Show current Mode in GUI Display (on the left).
     show_mode = true,
 
-    -- Show current Front Player in GUI Display (in the middle)
+    -- Show current Front Player in GUI Display (in the middle).
     show_front_player = true,
 
-    -- Show current Player in Battle in GUI Display (on the right)
+    -- Show current Player in Battle in GUI Display (on the right).
     show_battle_player = true
 }
 
