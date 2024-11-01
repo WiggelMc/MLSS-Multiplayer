@@ -6,5 +6,9 @@
     "runtime.version": "Lua 5.4",
     "diagnostics.neededFileStatus": {
         "codestyle-check" : "Any"
-    }
+    },
+    "runtime.path": [
+        "src/?.lua"
+    ],
+    "diagnostics.ignoredFiles": "Disable"
 }

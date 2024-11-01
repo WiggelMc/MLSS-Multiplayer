@@ -1,5 +1,7 @@
+local table_helper = require "lib.table_helper"
+
 local Settings
-local compareTables, copyTable, updateGameData, get_other_player, get_byte_data, get_game_mode, get_front_player, get_battle_player
+local updateGameData, get_other_player, get_byte_data, get_game_mode, get_front_player, get_battle_player
 local get_input, define_inputs, get_gui_text, redraw_gui_text, main, GameData, exit
 
 ---@enum GameMode
@@ -29,40 +31,6 @@ local PlayerStrings = {
     [Player.MARIO] = "M",
     [Player.LUIGI] = "L"
 }
-
----@param tbl1 table
----@param tbl2 table
----@return boolean
-function compareTables(tbl1, tbl2)
-    if (tbl1 == tbl2) then
-        return true
-    elseif (tbl1 == nil or tbl2 == nil) then
-        return false
-    end
-
-    local len1 = 0
-    local len2 = 0
-    for key, value in pairs(tbl1) do
-        len1 = len1 + 1
-        if (tbl2[key] ~= value) then
-            return false
-        end
-    end
-    for _, _ in pairs(tbl2) do
-        len2 = len2 + 1
-    end
-    return len1 == len2
-end
-
----@param tbl table
----@return table
-function copyTable(tbl)
-    local tbl_copy = {}
-    for key, value in pairs(tbl) do
-        tbl_copy[key] = value
-    end
-    return tbl_copy
-end
 
 ---@return nil
 function updateGameData()
@@ -159,11 +127,11 @@ end
 ---@field screen_height integer
 
 ---@type GameData
-local GameData = {
+GameData = {
     byte_data = get_byte_data(),
-    mode = get_game_mode(),
-    front_player = get_front_player(),
-    battle_player = get_battle_player(),
+    mode = GameMode.MENU,
+    front_player = Player.MARIO,
+    battle_player = Player.MARIO,
     inputs = {},
     gui_text = {},
     screen_height = 0
@@ -332,7 +300,8 @@ function redraw_gui_text()
     end
 
     if (gui_text.battle_player ~= nil) then
-        gui.drawString(left_offset + 50, top_offset + 2, gui_text.battle_player, "#DD667777", "#00000000", 24, nil, "bold")
+        gui.drawString(left_offset + 50, top_offset + 2, gui_text.battle_player, "#DD667777", "#00000000", 24, nil,
+            "bold")
     end
 end
 
@@ -356,10 +325,10 @@ function main()
     end)
 
     while true do
-        local old_GameData = copyTable(GameData)
+        local old_GameData = table_helper.copy(GameData)
         updateGameData()
 
-        if (Settings.log_inputs and (not compareTables(GameData.inputs, old_GameData.inputs))) then
+        if (Settings.log_inputs and (not table_helper.compare(GameData.inputs, old_GameData.inputs))) then
             print("\nInputs:")
             for key, _ in pairs(GameData.inputs) do
                 print(key)
@@ -367,7 +336,7 @@ function main()
             print(">\n")
         end
 
-        if (GameData.screen_height ~= old_GameData.screen_height or (not compareTables(GameData.gui_text, old_GameData.gui_text))) then
+        if (GameData.screen_height ~= old_GameData.screen_height or (not table_helper.compare(GameData.gui_text, old_GameData.gui_text))) then
             redraw_gui_text()
         end
 
@@ -375,9 +344,6 @@ function main()
         emu.frameadvance()
     end
 end
-
-
-
 
 -- ##################################### --
 -- #                                   # --
