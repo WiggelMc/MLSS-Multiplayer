@@ -1,8 +1,8 @@
 ---@class GameModeClass
-local GameMode = {}
+local game_mode = {}
 
 ---@enum GameMode
-GameMode = {
+game_mode = {
     MENU = "MODE_MENU",
     BATTLE = "MODE_BATTLE",
     LEVEL_UP = "MODE_LEVEL_UP",
@@ -10,17 +10,17 @@ GameMode = {
 }
 
 ---@type table<GameMode, string>
-local Strings = {
-    [GameMode.MENU] = "M",
-    [GameMode.BATTLE] = "B",
-    [GameMode.LEVEL_UP] = "L",
-    [GameMode.FIELD] = "F"
+local strings = {
+    [game_mode.MENU] = "M",
+    [game_mode.BATTLE] = "B",
+    [game_mode.LEVEL_UP] = "L",
+    [game_mode.FIELD] = "F"
 }
 
 ---@param mode GameMode
 ---@return string
-function GameMode.toString(mode)
-    return Strings[mode]
+function game_mode.to_string(mode)
+    return strings[mode]
 end
 
-return GameMode
+return game_mode

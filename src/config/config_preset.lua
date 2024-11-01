@@ -1,8 +1,8 @@
 ---@class ConfigPreset
-local ConfigPreset = {}
+local config_preset = {}
 
 ---@type string
-ConfigPreset.Text =
+config_preset.text =
 [[
 ; Mario & Luigi: Superstar Saga - Multiplayer Script for BizHawk
 ; Configuration
@@ -253,4 +253,4 @@ lead_give = X2 Y
 
 ]]
 
-return ConfigPreset
+return config_preset

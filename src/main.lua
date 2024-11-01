@@ -1,5 +1,6 @@
-local TableHelper = require "lib.table_helper"
-local Player = require "game.player"
+local table_helper = require "lib.table_helper"
+local player = require "game.player"
+local game_mode = require "game.game_mode"
 
 local ConfigData
 local updateGameData, get_other_player, get_byte_data, get_game_mode, get_front_player, get_battle_player
@@ -27,13 +28,13 @@ local function get_game_data()
     }
 end
 
----@param player Player
+---@param selected_player Player
 ---@return Player
-function get_other_player(player)
-    if (player == Player.MARIO) then
-        return Player.LUIGI
+function get_other_player(selected_player)
+    if (selected_player == player.MARIO) then
+        return player.LUIGI
     else
-        return Player.MARIO
+        return player.MARIO
     end
 end
 
@@ -80,9 +81,9 @@ end
 ---@return Player
 function get_front_player(byte_data)
     if (byte_data.front_player_index == 1) then
-        return Player.MARIO
+        return player.MARIO
     else
-        return Player.LUIGI
+        return player.LUIGI
     end
 end
 
@@ -91,12 +92,12 @@ end
 function get_battle_player(byte_data)
     if ("ACTUAL BATTLE" == "--- TODO ---") then
         if ("MARIO'S TURN" == "--- TODO ---") then
-            return Player.MARIO
+            return player.MARIO
         else
-            return Player.LUIGI
+            return player.LUIGI
         end
     else
-        return Player.MARIO
+        return player.MARIO
     end
 end
 
@@ -186,8 +187,8 @@ function get_input(game_data)
         gba_inputs.A = joy_inputs[active_map.menu_confirm] or false
         gba_inputs.B = joy_inputs[active_map.menu_cancel] or false
     elseif (game_mode == GameMode.BATTLE) then
-        gba_inputs.A = joy_inputs[input_map[Player.MARIO].action_perform] or false
-        gba_inputs.B = joy_inputs[input_map[Player.LUIGI].action_perform] or false
+        gba_inputs.A = joy_inputs[input_map[player.MARIO].action_perform] or false
+        gba_inputs.B = joy_inputs[input_map[player.LUIGI].action_perform] or false
     elseif (game_mode == GameMode.FIELD) then
         gba_inputs.A = joy_inputs[front_map.action_perform] or false
         gba_inputs.B = joy_inputs[back_map.action_perform] or false
@@ -293,7 +294,7 @@ function main()
         local old_game_data = game_data
         game_data = get_game_data()
 
-        if (ConfigData.log_inputs and (not TableHelper.compare(game_data.inputs, old_game_data.inputs))) then
+        if (ConfigData.log_inputs and (not table_helper.compare(game_data.inputs, old_game_data.inputs))) then
             print("\nInputs:")
             for key, _ in pairs(game_data.inputs) do
                 print(key)
@@ -301,7 +302,7 @@ function main()
             print(">\n")
         end
 
-        if (game_data.screen_height ~= old_game_data.screen_height or (not TableHelper.compare(game_data.gui_text, old_game_data.gui_text))) then
+        if (game_data.screen_height ~= old_game_data.screen_height or (not table_helper.compare(game_data.gui_text, old_game_data.gui_text))) then
             redraw_gui_text(game_data)
         end
 
@@ -451,8 +452,8 @@ ConfigData = {
     --
     -- If you need to find the Device Name or names for Buttons on your Controller, refer to the `log_inputs` Setting.
     input_map = {
-        [Player.MARIO] = define_inputs("X1", RecommendedXInputs),
-        [Player.LUIGI] = define_inputs("J2", RecommendedN64Inputs)
+        [player.MARIO] = define_inputs("X1", RecommendedXInputs),
+        [player.LUIGI] = define_inputs("J2", RecommendedN64Inputs)
     },
 
     -- Allow the Rear Player to Swap.

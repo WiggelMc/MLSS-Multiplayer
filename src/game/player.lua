@@ -1,22 +1,22 @@
 ---@class PlayerClass
-local Player = {}
+local player = {}
 
 ---@enum Player
-Player = {
+player = {
     MARIO = "MARIO",
     LUIGI = "LUIGI"
 }
 
 ---@type table<Player, string>
-local Strings = {
-    [Player.MARIO] = "M",
-    [Player.LUIGI] = "L"
+local strings = {
+    [player.MARIO] = "M",
+    [player.LUIGI] = "L"
 }
 
 ---@param player Player
 ---@return string
-function Player.toString(player)
-    return Strings[player]
+function player.to_string(player)
+    return strings[player]
 end
 
-return Player
+return player

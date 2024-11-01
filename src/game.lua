@@ -1,5 +1,5 @@
 ---@class Game
-local Game = {}
+local game = {}
 
 
 ---@class (exact) Game.GuiText
@@ -11,7 +11,7 @@ local Game = {}
 ---@param front_player Game.Player
 ---@param battle_player Game.Player
 ---@return Game.GuiText
-function Game.get_gui_text(mode, front_player, battle_player, config_data)
+function game.get_gui_text(mode, front_player, battle_player, config_data)
     ---@type Game.GuiText
     local gui_text = {}
 
@@ -32,4 +32,4 @@ end
 
 
 
-return Game
+return game

@@ -1,5 +1,5 @@
 ---@class ConfigClass
-local Config = {}
+local config = {}
 
 ---@class (exact) Config
 ---@field input_map table<Player,InputLayout>
@@ -27,4 +27,4 @@ local Config = {}
 ---@field lead_take string
 ---@field lead_give string
 
-return Config
+return config

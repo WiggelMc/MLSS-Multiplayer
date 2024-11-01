@@ -1,10 +1,10 @@
 ---@class TableHelper
-local TableHelper = {}
+local table_helper = {}
 
 ---@param tbl1 table
 ---@param tbl2 table
 ---@return boolean
-function TableHelper.compare(tbl1, tbl2)
+function table_helper.compare(tbl1, tbl2)
     if (tbl1 == tbl2) then
         return true
     elseif (tbl1 == nil or tbl2 == nil) then
@@ -27,7 +27,7 @@ end
 
 ---@param tbl table
 ---@return table
-function TableHelper.copy(tbl)
+function table_helper.copy(tbl)
     local tbl_copy = {}
     for key, value in pairs(tbl) do
         tbl_copy[key] = value
@@ -35,4 +35,4 @@ function TableHelper.copy(tbl)
     return tbl_copy
 end
 
-return TableHelper
+return table_helper
