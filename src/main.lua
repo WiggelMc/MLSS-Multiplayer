@@ -2,7 +2,7 @@ local table_helper = require "lib.table_helper"
 
 local Settings
 local updateGameData, get_other_player, get_byte_data, get_game_mode, get_front_player, get_battle_player
-local get_input, define_inputs, get_gui_text, redraw_gui_text, main, GameData, exit
+local get_input, define_inputs, get_gui_text, redraw_gui_text, main, exit
 
 ---@enum GameMode
 local GameMode = {
@@ -32,15 +32,26 @@ local PlayerStrings = {
     [Player.LUIGI] = "L"
 }
 
----@return nil
-function updateGameData()
-    GameData.byte_data = get_byte_data()
-    GameData.mode = get_game_mode()
-    GameData.front_player = get_front_player()
-    GameData.battle_player = get_battle_player()
-    GameData.inputs = input.get()
-    GameData.gui_text = get_gui_text()
-    GameData.screen_height = client.screenheight()
+---@return GameData
+local function get_game_data()
+    local byte_data = get_byte_data()
+    local mode = get_game_mode(byte_data)
+    local front_player = get_front_player(byte_data)
+    local battle_player = get_battle_player(byte_data)
+    local inputs = input.get()
+    local gui_text = get_gui_text(mode, front_player, battle_player)
+    local screen_height = client.screenheight()
+
+    ---@type GameData
+    return {
+        byte_data = byte_data,
+        mode = mode,
+        front_player = front_player,
+        battle_player = battle_player,
+        inputs = inputs,
+        gui_text = gui_text,
+        screen_height = screen_height
+    }
 end
 
 ---@param player Player
@@ -74,11 +85,10 @@ function get_byte_data()
     }
 end
 
+---@param byte_data ByteData
 ---@return GameMode
-function get_game_mode()
-    local flags = GameData.byte_data
-
-    if (flags.is_pause_screen_open or flags.is_dialog_open or flags.is_movement_disabled) then
+function get_game_mode(byte_data)
+    if (byte_data.is_pause_screen_open or byte_data.is_dialog_open or byte_data.is_movement_disabled) then
         return GameMode.MENU
     elseif ("BATTLE" == "--- TODO ---") then
         if ("LEVEL_UP" == "--- TODO ---") then
@@ -93,19 +103,19 @@ function get_game_mode()
     end
 end
 
+---@param byte_data ByteData
 ---@return Player
-function get_front_player()
-    local flags = GameData.byte_data
-
-    if (flags.front_player_index == 1) then
+function get_front_player(byte_data)
+    if (byte_data.front_player_index == 1) then
         return Player.MARIO
     else
         return Player.LUIGI
     end
 end
 
+---@param byte_data ByteData
 ---@return Player
-function get_battle_player()
+function get_battle_player(byte_data)
     if ("ACTUAL BATTLE" == "--- TODO ---") then
         if ("MARIO'S TURN" == "--- TODO ---") then
             return Player.MARIO
@@ -126,16 +136,16 @@ end
 ---@field gui_text GuiText
 ---@field screen_height integer
 
----@type GameData
-GameData = {
-    byte_data = get_byte_data(),
-    mode = GameMode.MENU,
-    front_player = Player.MARIO,
-    battle_player = Player.MARIO,
-    inputs = {},
-    gui_text = {},
-    screen_height = 0
-}
+-- ---@type GameData
+-- GameData = {
+--     byte_data = get_byte_data(),
+--     mode = GameMode.MENU,
+--     front_player = Player.MARIO,
+--     battle_player = Player.MARIO,
+--     inputs = {},
+--     gui_text = {},
+--     screen_height = 0
+-- }
 
 ---@class (exact) GbaInput
 ---@field Left boolean
@@ -150,10 +160,11 @@ GameData = {
 ---@field Select boolean
 ---@field Power boolean
 
+---@param game_data GameData
 ---@return GbaInput
-function get_input()
-    local game_mode = GameData.mode
-    local joy_inputs = GameData.inputs
+function get_input(game_data)
+    local game_mode = game_data.mode
+    local joy_inputs = game_data.inputs
     local input_map = Settings.input_map
 
     ---@type GbaInput
@@ -171,12 +182,12 @@ function get_input()
         Power = false
     }
 
-    local front_player = GameData.front_player
+    local front_player = game_data.front_player
     local front_map = input_map[front_player]
     local back_player = get_other_player(front_player)
     local back_map = input_map[back_player]
 
-    local battle_player = GameData.battle_player
+    local battle_player = game_data.battle_player
     local battle_map = input_map[battle_player]
 
     local active_map
@@ -258,34 +269,38 @@ end
 ---@field front_player string?
 ---@field battle_player string?
 
+---@param mode GameMode
+---@param front_player Player
+---@param battle_player Player
 ---@return GuiText
-function get_gui_text()
+function get_gui_text(mode, front_player, battle_player)
     ---@type GuiText
     local gui_text = {}
 
     if (Settings.show_mode) then
-        gui_text.mode = GameModeStrings[GameData.mode]
+        gui_text.mode = GameModeStrings[mode]
     end
 
     if (Settings.show_front_player) then
-        gui_text.front_player = PlayerStrings[GameData.front_player]
+        gui_text.front_player = PlayerStrings[front_player]
     end
 
     if (Settings.show_battle_player) then
-        gui_text.battle_player = PlayerStrings[GameData.battle_player]
+        gui_text.battle_player = PlayerStrings[battle_player]
     end
 
     return gui_text
 end
 
+---@param game_data GameData
 ---@return nil
-function redraw_gui_text()
+function redraw_gui_text(game_data)
     gui.use_surface("client")
     gui.clearGraphics()
-    local top_offset = GameData.screen_height - 70
+    local top_offset = game_data.screen_height - 70
     local left_offset = 20
 
-    local gui_text = GameData.gui_text
+    local gui_text = game_data.gui_text
 
     if (Settings.show_gui_rect) then
         gui.drawBox(left_offset, top_offset + 3, left_offset + 73, top_offset + 28, "#00000000", "#AA000000")
@@ -324,23 +339,26 @@ function main()
         exit(processID)
     end)
 
-    while true do
-        local old_GameData = table_helper.copy(GameData)
-        updateGameData()
+    local game_data = get_game_data()
+    redraw_gui_text(game_data)
 
-        if (Settings.log_inputs and (not table_helper.compare(GameData.inputs, old_GameData.inputs))) then
+    while true do
+        local old_game_data = game_data
+        game_data = get_game_data()
+
+        if (Settings.log_inputs and (not table_helper.compare(game_data.inputs, old_game_data.inputs))) then
             print("\nInputs:")
-            for key, _ in pairs(GameData.inputs) do
+            for key, _ in pairs(game_data.inputs) do
                 print(key)
             end
             print(">\n")
         end
 
-        if (GameData.screen_height ~= old_GameData.screen_height or (not table_helper.compare(GameData.gui_text, old_GameData.gui_text))) then
-            redraw_gui_text()
+        if (game_data.screen_height ~= old_game_data.screen_height or (not table_helper.compare(game_data.gui_text, old_game_data.gui_text))) then
+            redraw_gui_text(game_data)
         end
 
-        joypad.set(get_input())
+        joypad.set(get_input(game_data))
         emu.frameadvance()
     end
 end
