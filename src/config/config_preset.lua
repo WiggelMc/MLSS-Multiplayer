@@ -1,3 +1,9 @@
+---@class ConfigPreset
+local ConfigPreset = {}
+
+---@type string
+ConfigPreset.Text =
+[[
 ; Mario & Luigi: Superstar Saga - Multiplayer Script for BizHawk
 ; Configuration
 
@@ -5,7 +11,7 @@
 
 ; Most Settings can be either `true` or `false`, if you want to change them, replace the existing value (eg. replace `false` with `true` or vice versa).
 ; Anything following a Semicolon (;) is a Comment and will be ignored
-; Don't forget you need to save this file and then reload the Script to apply changes to the Configuration. 
+; Don't forget you need to save this file and then reload the Script to apply changes to the Configuration.
 
 
 
@@ -52,7 +58,7 @@ show_battle_player = true
 ;
 ; If you need to find the Device Name or names for Buttons on your Controller, refer to the `log_inputs` Setting.
 ;
-; If a Setting contains any one of Backslash (\), Equals (=) or Semicolon (;), escape them by prepending a Backslash 
+; If a Setting contains any one of Backslash (\), Equals (=) or Semicolon (;), escape them by prepending a Backslash
 ; (eg. `Key\\\=\;` will evaluate to `Key\=;` ).
 ; Any Spaces and Tabs at the beginning and end of values are trimmed, if you need one of them, use `\s` for Space and
 ; `\t` for Tab (eg. `left = \sL E F T\t` will assign the value ` L E F T    ` to left)
@@ -102,43 +108,43 @@ lead_give = Y
 [Unused] ; ExampleInputs
 
 ; Name of Input Device (Obtain using `log_inputs` Setting).
-device = 
+device =
 
-; Directional Inputs (Dpad) (only for the Front Player or the current Player in Battle). 
-left = 
-right = 
-up = 
-down = 
+; Directional Inputs (Dpad) (only for the Front Player or the current Player in Battle).
+left =
+right =
+up =
+down =
 
 ; Open the Menu (Select).
-menu = 
+menu =
 
 ; Confirm (A) Button inside of Menus (this includes Dialog Boxes).
-menu_confirm = 
+menu_confirm =
 
 ; Cancel (B) Button inside of Menus (this includes Dialog Boxes).
-menu_cancel = 
+menu_cancel =
 
 ; More info (Start) inside of Menus (used mainly to see Controls in Minigames).
-menu_start = 
+menu_start =
 
 ; Scroll Left (L) inside of Menus (this includes the difficulty selection in Battle).
-menu_L = 
+menu_L =
 
 ; Scroll Right (R) inside of Menus (this includes the difficulty selection in Battle).
-menu_R = 
+menu_R =
 
 ; Perform the current Action in the Overworld (A / B) (Also used as the Attack and Confirm button in Battle).
-action_perform = 
+action_perform =
 
 ; Cycle through the available Actions in the Overworld (R / L).
-action_cycle = 
+action_cycle =
 
 ; Swap with the Front Player, if you are in the back (Start) (can be disabled in Settings).
-lead_take = 
+lead_take =
 
 ; Swap with the Rear Player, if you are in the Front (Start) (can be disabled in Settings).
-lead_give = 
+lead_give =
 
 
 
@@ -228,7 +234,7 @@ lead_give = B9       ; Start
 ; An Input Layout for X-Input compatible Controllers, split between a different Device for each hand.
 ; This is mostly intended as a demonstration of the Configuration Syntax.
 [Unused] ; SplitXInputs
-device = 
+device =
 
 left = X1 DpadLeft
 right = X1 DpadRight
@@ -244,3 +250,7 @@ action_perform = X2 A
 action_cycle = X2 X
 lead_take = X2 B
 lead_give = X2 Y
+
+]]
+
+return ConfigPreset
