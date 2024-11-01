@@ -28,7 +28,7 @@ each taking control of one Brother. The Brother at the front is responsible for 
 - Open [BizHawk](https://tasvideos.org/BizHawk) (Tested on 2.9.1) and start the game
 - In BizHawk, open the Lua Console (Tools > Lua Console)
 - From the Console, open the Script (Script > Open Script...)
-- The Script will generate a Config File in the same Directory (mlss_multiplace.ini)
+- The Script will generate a Config File in the same Directory (mlss_multiplayer.ini)
 - Edit the Config File in a Text Editor and configure any Settings you want
 - To apply your changes, save the File and refresh the Script (Script > Refresh)
 - You can now play the game, the Script can be started and stopped at any time, even while the game is running
