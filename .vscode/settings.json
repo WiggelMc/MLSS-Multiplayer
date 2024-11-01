@@ -1,15 +1,6 @@
 {
-    "Lua.diagnostics.globals": [
-        "memory",
-        "input",
-        "client",
-        "bit",
-        "gui",
-        "joypad",
-        "emu",
-        "event"
-    ],
     "Lua.diagnostics.disable": [
         "trailing-space"
-    ]
+    ],
+    "Lua.workspace.ignoreSubmodules": false
 }
