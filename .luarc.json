@@ -1,0 +1,10 @@
+{
+    "diagnostics.disable": [
+        "trailing-space"
+    ],
+    "workspace.ignoreSubmodules": false,
+    "runtime.version": "Lua 5.4",
+    "diagnostics.neededFileStatus": {
+        "codestyle-check" : "Any"
+    }
+}
