@@ -285,13 +285,20 @@ event.onexit(function()
     print("\nMLSS Multiplayer stopped (ID: " .. ProcessID .. ") \n")
 end)
 
+
+
+
 -- ##################################### --
 -- #                                   # --
 -- #          Configuration            # --
 -- #                                   # --
 -- ##################################### --
 
-local DefaultXInputs = {
+
+
+
+-- The Recommended Input Layout for X-Input compatible Controllers
+local RecommendedXInputs = {
     left = "DpadLeft",
     right = "DpadRight",
     up = "DpadUp",
@@ -308,7 +315,9 @@ local DefaultXInputs = {
     lead_give = "Y"
 }
 
-local AlternateXInputs = {
+-- An alternative Input Layout for X-Input compatible Controllers,
+-- which is closer to the original controls of the game
+local ClassicXInputs = {
     left = "DpadLeft",
     right = "DpadRight",
     up = "DpadUp",
@@ -325,7 +334,8 @@ local AlternateXInputs = {
     lead_give = "Start"
 }
 
-local N64Inputs = {
+-- The Recommended Input Layout for the Mayflash N64 Controller Adapter for PC
+local RecommendedN64Inputs = {
     left = "POV1L",          -- Dpad Left
     right = "POV1R",         -- Dpad Right
     up = "POV1U",            -- Dpad Up
@@ -342,17 +352,96 @@ local N64Inputs = {
     lead_give = "RotationZ+" -- C Left
 }
 
+-- An alternative Input Layout for the Mayflash N64 Controller Adapter for PC,
+-- which is closer to the original controls of the game
+local ClassicN64Inputs = {
+    left = "POV1L",        -- Dpad Left
+    right = "POV1R",       -- Dpad Right
+    up = "POV1U",          -- Dpad Up
+    down = "POV1D",        -- Dpad Down
+    menu = "Z-",           -- C Up
+    menu_confirm = "B2",   -- A
+    menu_cancel = "B3",    -- B
+    menu_start = "B9",     -- Start
+    menu_L = "B7",         -- L
+    menu_R = "B8",         -- R
+    action_perform = "B2", -- A
+    action_cycle = "B8",   -- R
+    lead_take = "B9",      -- Start
+    lead_give = "B9"       -- Start
+}
+
+-- An Example Layout listing the Controls
+local ExampleInputs = {
+    -- Directional Inputs (Dpad) (only for the Front Player or the current Player in Battle)
+    left = "None",
+    right = "None",
+    up = "None",
+    down = "None",
+
+    -- Open the Menu (Select)
+    menu = "None",
+
+    -- Confirm (A) Button inside of Menus (this includes Dialog Boxes)
+    menu_confirm = "None",
+
+    -- Cancel (B) Button inside of Menus (this includes Dialog Boxes)
+    menu_cancel = "None",
+
+    -- More info (Start) inside of Menus (used mainly to see Controls in Minigames)
+    menu_start = "None",
+
+    -- Scroll Left (L) inside of Menus (this includes the difficulty selection in Battle)
+    menu_L = "None",
+
+    -- Scroll Right (R) inside of Menus (this includes the difficulty selection in Battle)
+    menu_R = "None",
+
+    -- Perform the current Action in the Overworld (A / B) (Also used as the Attack and Confirm button in Battle)
+    action_perform = "None",
+
+    -- Cycle through the available Actions in the Overworld (R / L)
+    action_cycle = "None",
+
+    -- Swap with the Front Player, if you are in the back (Start) (can be disabled in Settings)
+    lead_take = "None",
+
+    -- Swap with the Rear Player, if you are in the Front (Start) (can be disabled in Settings)
+    lead_give = "None"
+}
+
 Settings = {
+    -- Configure Controls for either Player.
+    --
+    -- They are defined in the format `define_inputs(device_name, layout)`.
+    --
+    -- Layouts are defined above, you can modify those or define your own by copying an existing one and renaming it.
+    -- If you need multiple devices for a single Player, assign the Layout directly (eg. `[Player.MARIO] = YourInputs`)
+    -- and prepend the Inputs manually with the Device Name (eg. `left = "X1 DpadLeft"`)
     input_map = {
-        [Player.MARIO] = define_inputs("X1", DefaultXInputs),
-        [Player.LUIGI] = define_inputs("J2", N64Inputs)
+        [Player.MARIO] = define_inputs("X1", RecommendedXInputs),
+        [Player.LUIGI] = define_inputs("J2", RecommendedN64Inputs)
     },
+
+    -- Allow the Rear Player to Swap
     allow_lead_take = true,
+
+    -- Allow the Front Player to Swap
     allow_lead_give = true,
+
+    -- Log all Buttons from Input Devices to the Console (useful for input configuration)
     log_inputs = false,
+
+    -- Show rectangle around GUI Display
     show_gui_rect = true,
+
+    -- Show current Mode in GUI Display (on the left)
     show_mode = true,
+
+    -- Show current Front Player in GUI Display (in the middle)
     show_front_player = true,
+
+    -- Show current Player in Battle in GUI Display (on the right)
     show_battle_player = true
 }
 
