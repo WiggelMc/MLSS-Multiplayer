@@ -215,20 +215,20 @@ lead_give = RotationZ+ ; C Left
 [Unused] ; ClassicN64Inputs
 device = J2
 
-left = POV1L         ; Dpad Left
-right = POV1R        ; Dpad Right
-up = POV1U           ; Dpad Up
-down = POV1D         ; Dpad Down
-menu = Z-            ; C Up
-menu_confirm = B2    ; A
-menu_cancel = B3     ; B
-menu_start = B9      ; Start
-menu_L = B7          ; L
-menu_R = B8          ; R
-action_perform = B2  ; A
-action_cycle = B8    ; R
-lead_take = B9       ; Start
-lead_give = B9       ; Start
+left = POV1L           ; Dpad Left
+right = POV1R          ; Dpad Right
+up = POV1U             ; Dpad Up
+down = POV1D           ; Dpad Down
+menu = Z-              ; C Up
+menu_confirm = B2      ; A
+menu_cancel = B3       ; B
+menu_start = B9        ; Start
+menu_L = B7            ; L
+menu_R = B8            ; R
+action_perform = B2    ; A
+action_cycle = B8      ; R
+lead_take = B9         ; Start
+lead_give = B9         ; Start
 
 
 ; An Input Layout for X-Input compatible Controllers, split between a different Device for each hand.
