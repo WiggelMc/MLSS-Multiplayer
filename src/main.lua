@@ -1,36 +1,9 @@
-local table_helper = require "lib.table_helper"
+local TableHelper = require "lib.table_helper"
+local Player = require "game.player"
 
-local Settings
+local ConfigData
 local updateGameData, get_other_player, get_byte_data, get_game_mode, get_front_player, get_battle_player
 local get_input, define_inputs, get_gui_text, redraw_gui_text, main, exit
-
----@enum GameMode
-local GameMode = {
-    MENU = "MODE_MENU",
-    BATTLE = "MODE_BATTLE",
-    LEVEL_UP = "MODE_LEVEL_UP",
-    FIELD = "MODE_FIELD"
-}
-
----@type table<GameMode, string>
-local GameModeStrings = {
-    [GameMode.MENU] = "M",
-    [GameMode.BATTLE] = "B",
-    [GameMode.LEVEL_UP] = "L",
-    [GameMode.FIELD] = "F"
-}
-
----@enum Player
-local Player = {
-    MARIO = "MARIO",
-    LUIGI = "LUIGI"
-}
-
----@type table<Player, string>
-local PlayerStrings = {
-    [Player.MARIO] = "M",
-    [Player.LUIGI] = "L"
-}
 
 ---@return GameData
 local function get_game_data()
@@ -165,7 +138,7 @@ end
 function get_input(game_data)
     local game_mode = game_data.mode
     local joy_inputs = game_data.inputs
-    local input_map = Settings.input_map
+    local input_map = ConfigData.input_map
 
     ---@type GbaInput
     local gba_inputs = {
@@ -220,30 +193,30 @@ function get_input(game_data)
         gba_inputs.B = joy_inputs[back_map.action_perform] or false
         gba_inputs.L = joy_inputs[back_map.action_cycle] or false
         gba_inputs.R = joy_inputs[front_map.action_cycle] or false
-        gba_inputs.Start = (joy_inputs[front_map.lead_give] and Settings.allow_lead_give) or
-            (joy_inputs[back_map.lead_take] and Settings.allow_lead_take) or false
+        gba_inputs.Start = (joy_inputs[front_map.lead_give] and ConfigData.allow_lead_give) or
+            (joy_inputs[back_map.lead_take] and ConfigData.allow_lead_take) or false
     end
 
     return gba_inputs
 end
 
----@class (exact) InputLayout
----@field left string
----@field right string
----@field up string
----@field down string
----@field menu string
----@field menu_confirm string
----@field menu_cancel string
----@field menu_start string
----@field menu_L string
----@field menu_R string
----@field action_perform string
----@field action_cycle string
----@field lead_take string
----@field lead_give string
+-- -@class (exact) InputLayout
+-- -@field left string
+-- -@field right string
+-- -@field up string
+-- -@field down string
+-- -@field menu string
+-- -@field menu_confirm string
+-- -@field menu_cancel string
+-- -@field menu_start string
+-- -@field menu_L string
+-- -@field menu_R string
+-- -@field action_perform string
+-- -@field action_cycle string
+-- -@field lead_take string
+-- -@field lead_give string
 
----@class (exact) Settings
+---@class (exact) ConfigData
 ---@field input_map table<Player,InputLayout>
 ---@field allow_lead_take boolean
 ---@field allow_lead_give boolean
@@ -264,33 +237,7 @@ function define_inputs(controller_name, input_table)
     return assigned_input_table
 end
 
----@class (exact) GuiText
----@field mode string?
----@field front_player string?
----@field battle_player string?
 
----@param mode GameMode
----@param front_player Player
----@param battle_player Player
----@return GuiText
-function get_gui_text(mode, front_player, battle_player)
-    ---@type GuiText
-    local gui_text = {}
-
-    if (Settings.show_mode) then
-        gui_text.mode = GameModeStrings[mode]
-    end
-
-    if (Settings.show_front_player) then
-        gui_text.front_player = PlayerStrings[front_player]
-    end
-
-    if (Settings.show_battle_player) then
-        gui_text.battle_player = PlayerStrings[battle_player]
-    end
-
-    return gui_text
-end
 
 ---@param game_data GameData
 ---@return nil
@@ -302,7 +249,7 @@ function redraw_gui_text(game_data)
 
     local gui_text = game_data.gui_text
 
-    if (Settings.show_gui_rect) then
+    if (ConfigData.show_gui_rect) then
         gui.drawBox(left_offset, top_offset + 3, left_offset + 73, top_offset + 28, "#00000000", "#AA000000")
     end
 
@@ -346,7 +293,7 @@ function main()
         local old_game_data = game_data
         game_data = get_game_data()
 
-        if (Settings.log_inputs and (not table_helper.compare(game_data.inputs, old_game_data.inputs))) then
+        if (ConfigData.log_inputs and (not TableHelper.compare(game_data.inputs, old_game_data.inputs))) then
             print("\nInputs:")
             for key, _ in pairs(game_data.inputs) do
                 print(key)
@@ -354,7 +301,7 @@ function main()
             print(">\n")
         end
 
-        if (game_data.screen_height ~= old_game_data.screen_height or (not table_helper.compare(game_data.gui_text, old_game_data.gui_text))) then
+        if (game_data.screen_height ~= old_game_data.screen_height or (not TableHelper.compare(game_data.gui_text, old_game_data.gui_text))) then
             redraw_gui_text(game_data)
         end
 
@@ -492,8 +439,8 @@ local ExampleInputs = {
 
 --- Configure the Settings for the Script.
 --- Most Settings can be either `true` or `false`, if you want to change them, replace the existing value (eg. replace `false` with `true` or vice versa).
----@type Settings
-Settings = {
+---@type ConfigData
+ConfigData = {
     -- Configure Controls for either Player.
     --
     -- They are defined in the format `define_inputs(device_name, layout)`.
