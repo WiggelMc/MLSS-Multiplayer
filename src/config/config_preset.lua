@@ -1,4 +1,4 @@
----@class ConfigPreset
+---@class ConfigPresetClass
 local config_preset = {}
 
 ---@type string
@@ -58,7 +58,7 @@ show_battle_player = true
 ;
 ; If you need to find the Device Name or names for Buttons on your Controller, refer to the `log_inputs` Setting.
 ;
-; If a Setting contains any one of Backslash (\), Equals (=) or Semicolon (;), escape them by prepending a Backslash
+; If a Setting contains any one of Backslash (\), Equals (=), Semicolon (;) or a Bracket ([) (]), escape them by prepending a Backslash
 ; (eg. `Key\\\=\;` will evaluate to `Key\=;` ).
 ; Any Spaces and Tabs at the beginning and end of values are trimmed, if you need one of them, use `\s` for Space and
 ; `\t` for Tab (eg. `left = \sL E F T\t` will assign the value ` L E F T    ` to left)
