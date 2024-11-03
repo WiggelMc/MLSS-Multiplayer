@@ -19,16 +19,35 @@
 --  cutscene v overworld
 --  pause + textbox + cutscene v battle
 
-local bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
+local frames_i = 0
+local iterations_i = 0
+
+local frames = 60
+local iterations = 5
 
 math.randomseed(os.time())
-local file = io.open("ramdump" .. math.random(100000, 999999) .. ".bin", "wb")
+local id = math.random(100000, 999999)
 
-if (file == nil) then
-    error("File could not be created")
+while (iterations_i < iterations) do
+    frames_i = frames_i + 1
+
+    if (frames_i >= frames) then
+        frames_i = 0
+        iterations_i = iterations_i + 1
+
+        local bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
+        local file = io.open("ramdump_" .. id .. "_" .. iterations_i .. ".bin", "wb")
+
+        if (file == nil) then
+            error("File could not be created")
+        end
+
+        file:write(string.char(table.unpack(bytes)))
+
+        file:flush()
+        file:close()
+        print("Written File " .. iterations_i)
+    end
+
+    emu.frameadvance()
 end
-
-file:write(string.char(table.unpack(bytes)))
-
-file:flush()
-file:close()
