@@ -144,3 +144,5 @@ dist
 
 # build artifacts
 out
+*.bin
+
