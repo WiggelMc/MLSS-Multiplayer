@@ -1,4 +1,3 @@
-local bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
 
 -- TODO: use loop
 --  ensure that memory is read in a single frame
@@ -20,16 +19,16 @@ local bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
 --  cutscene v overworld
 --  pause + textbox + cutscene v battle
 
+local bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
+
 math.randomseed(os.time())
 local file = io.open("ramdump" .. math.random(100000, 999999) .. ".bin", "wb")
 
 if (file == nil) then
-    error("ERROR")
+    error("File could not be created")
 end
 
-for _, value in ipairs(bytes) do
-    file:write(string.char(value))
-end
+file:write(string.char(table.unpack(bytes)))
 
 file:flush()
 file:close()
