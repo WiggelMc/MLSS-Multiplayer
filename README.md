@@ -22,7 +22,7 @@ each taking control of one Brother. The Brother at the front is responsible for 
 - Configurable Permissions for the Swap Action (Take / Give Control)
 
 
-## How to install
+## How to Install
 
 - Download the Script ([mlss-multiplayer.lua](TODO !! RELEASE LINK !! TODO))
 - Open [BizHawk](https://tasvideos.org/BizHawk) (Tested on 2.9.1) and start the game
@@ -30,5 +30,13 @@ each taking control of one Brother. The Brother at the front is responsible for 
 - From the Console, open the Script (Script > Open Script...)
 - The Script will generate a Config File in the same Directory (mlss_multiplayer.ini)
 - Edit the Config File in a Text Editor and configure any Settings you want
-- To apply your changes, save the File and refresh the Script (Script > Refresh)
+- To apply your changes, save the File and refresh the Script (Script > Refresh) if it's running or start it if it's stopped (Double-Click the Script in the List)
 - You can now play the game, the Script can be started and stopped at any time, even while the game is running
+
+## How to Build from Source
+
+- Install [npm](https://nodejs.org/en/download/)
+- Open the Project in a Terminal
+- Run `npm install`
+- Run `npm run build`
+- You can find the output in the `/out` directory

@@ -1,7 +1,10 @@
 local config_preset = require "config.config_preset"
 local table_helper  = require "lib.table_helper"
+local player        = require "game.player"
+local string_helper = require "lib.string_helper"
+
 ---@class ConfigFileClass
-local config_file = {}
+local config_file   = {}
 
 ---@class (exact) Config
 ---@field gameplay GameplayConfig
@@ -36,8 +39,12 @@ local config_file = {}
 ---@field lead_take string
 ---@field lead_give string
 
----@type InputLayout
+---@class InputLayoutTypes : InputLayout
+---@field device string
+
+---@type InputLayoutTypes
 local input_config_types = {
+    device = "string",
     left = "string",
     right = "string",
     up = "string",
@@ -98,42 +105,20 @@ function config_file.generate_preset()
     file:close()
 end
 
----@param str string
----@return string
-local function trim_front(str)
-    local result = string.gsub(str, "^%s+(.-)$", "%1")
-    return result or ""
-end
-
----@param str string
----@return string
-local function trim(str)
-    local result = string.gsub(str, "^%s+(.-)%s+$", "%1")
-    return result or ""
-end
-
-
----@param str string
----@return string, string
-local function take_head(str)
-    return string.sub(str, 1, 1), string.sub(str, 2)
-end
-
-
 ---@param line string
 ---@param f fun(head: string, tail: string): boolean
 ---@param buffer? string
 ---@return string, string?
 local function capture_until(line, f, buffer)
     local buffer = buffer or ""
-    local head, tail = take_head(line)
+    local head, tail = string_helper.take_head(line)
 
     if (f(head, tail)) then
         return buffer, line
     elseif (head == "" or head == ";") then
         return buffer, nil
     elseif (head == "\\") then
-        local head2, tail2 = take_head(tail)
+        local head2, tail2 = string_helper.take_head(tail)
         return capture_until(tail2, f, buffer .. head .. head2)
     else
         return capture_until(tail, f, buffer .. head)
@@ -145,11 +130,11 @@ end
 ---@return string
 local function unescape(str, buffer)
     buffer = buffer or ""
-    local head, tail = take_head(str)
+    local head, tail = string_helper.take_head(str)
     if (head == "") then
         return buffer
     elseif (head == "\\") then
-        local head2, tail2 = take_head(tail)
+        local head2, tail2 = string_helper.take_head(tail)
         if (head2 == "s") then
             return unescape(tail2, buffer .. " ")
         elseif (head2 == "t") then
@@ -163,18 +148,18 @@ local function unescape(str, buffer)
 end
 
 ---@alias ParseResult
----| {type: "Error"} 
----| {type: "Empty"} 
----| {type: "Section", name: string} 
+---| {type: "Error"}
+---| {type: "Empty"}
+---| {type: "Section", name: string}
 ---| {type: "Value", key: string, value: string})
 
 ---@param line string
 ---@return ParseResult
 local function parse(line)
-    local trimmed_line = trim_front(line)
-    local head, tail = take_head(trimmed_line)
+    local trimmed_line = string_helper.trim_front(line)
+    local head, tail = string_helper.take_head(trimmed_line)
 
-    if (head == ";") then
+    if (head == ";" or head == "") then
         ---@type ParseResult
         return { type = "Empty" }
     elseif (head == "[") then
@@ -187,34 +172,34 @@ local function parse(line)
             return { type = "Error" }
         end
 
-        local head2, line2 = take_head(line1)
+        local head2, line2 = string_helper.take_head(line1)
 
         if (head2 ~= "]") then
             ---@type ParseResult
             return { type = "Error" }
         end
 
-        local trimmed_line2 = trim_front(line2)
+        local trimmed_line2 = string_helper.trim_front(line2)
 
-        local next_char, _ = take_head(trimmed_line2)
+        local next_char, _ = string_helper.take_head(trimmed_line2)
         if (next_char == "\n" or next_char == "\r" or next_char == ";" or next_char == "") then
             ---@type ParseResult
-            return { type = "Section", name = unescape(trim(section_name)) }
+            return { type = "Section", name = unescape(string_helper.trim(section_name)) }
         else
             ---@type ParseResult
             return { type = "Error" }
         end
     else
-        local key, line1 = capture_until(tail, function(char)
+        local key, line1 = capture_until(line, function(char)
             return char == "="
         end)
-        
+
         if (line1 == nil) then
             ---@type ParseResult
             return { type = "Error" }
         end
 
-        local _, line2 = take_head(line1)
+        local _, line2 = string_helper.take_head(line1)
         local value, rest = capture_until(line2, function(char)
             return char == "=" or char == "[" or char == "]"
         end)
@@ -227,20 +212,56 @@ local function parse(line)
         ---@type ParseResult
         return {
             type = "Value",
-            key = unescape(trim(key)),
-            value = unescape(trim(value))
+            key = unescape(string_helper.trim(key)),
+            value = unescape(string_helper.trim(value))
         }
     end
 end
 
+---@return table
+local function init_config()
+    return {
+        gameplay = {
+            input_layouts = {
+                [player.MARIO] = {},
+                [player.LUIGI] = {}
+            }
+        },
+        debug = {}
+    }
+end
 
----@param config table<string,string>?
+---@param config table
 ---@param section string
 ---@param key string
 ---@param value any
 ---@return nil
 local function set_config_value(config, section, key, value)
+    if (section == "Gameplay") then
+        config["gameplay"][key] = value
+    elseif (section == "Debug") then
+        config["debug"][key] = value
+    elseif (section == "Mario") then
+        config["gameplay"]["input_layouts"][player.MARIO][key] = value
+    elseif (section == "Luigi") then
+        config["gameplay"]["input_layouts"][player.LUIGI][key] = value
+    end
+end
 
+---@param config table
+---@return Config
+local function fix_config(config)
+    local layouts = config["gameplay"]["input_layouts"]
+    for _, layout in pairs(layouts) do
+        local device = layout.device
+        layout.device = nil
+        if (device ~= "") then
+            for key, value in pairs(layout) do
+                layout[key] = device .. " " .. value
+            end
+        end
+    end
+    return config --[[@as Config]]
 end
 
 ---@return Config?, string[]?
@@ -252,7 +273,7 @@ function config_file.load()
     end
 
     local config_type_table = table_helper.deepcopy(config_types)
-    local config = {}
+    local config = init_config()
     ---@type string[]
     local errors = {}
     local line_num = 1
@@ -263,59 +284,61 @@ function config_file.load()
 
     for line in file:lines() do
         local result = parse(line)
-        
+
         if (result.type == "Error") then
-            table.insert(errors, "Could not parse Line [" .. line_num .. "]: " .. line)
+            table.insert(errors, "Could not parse Line [" 
+                .. line_num 
+                .. "]: " 
+                .. string_helper.trim(line)
+            )
         elseif (result.type == "Section") then
             current_section = result.name
             current_section_type_table = config_type_table[current_section]
         elseif (result.type == "Value") then
             if (current_section_type_table ~= nil and current_section ~= nil) then
                 local value_type = current_section_type_table[result.key]
+                current_section_type_table[result.key] = "set"
 
                 if (value_type == nil) then
-                    table.insert(errors, "Section \"" 
-                        .. current_section 
-                        .. "\" does does not accept the Key \"" 
+                    table.insert(errors, "Section \""
+                        .. current_section
+                        .. "\" does does not accept the Key \""
                         .. result.key
                         .. "\" ["
-                        .. line_num 
-                        .. "]: " 
-                        .. line
+                        .. line_num
+                        .. "]: "
+                        .. string_helper.trim(line)
                     )
                 elseif (value_type == "set") then
-                    table.insert(errors, "The Key \"" 
+                    table.insert(errors, "The Key \""
                         .. result.key
-                        .. "\" was set twice in Section \"" 
+                        .. "\" was set twice in Section \""
                         .. current_section
                         .. "\" ["
                         .. line_num
-                        .. "]: " 
-                        .. line
+                        .. "]: "
+                        .. string_helper.trim(line)
                     )
                 elseif (value_type == "boolean") then
                     if (result.value == "true") then
                         set_config_value(config, current_section, result.key, true)
-                        current_section_type_table[result.key] = "set"
                     elseif (result.value == "false") then
                         set_config_value(config, current_section, result.key, false)
-                        current_section_type_table[result.key] = "set"
                     else
-                        table.insert(errors, "The Key \"" 
+                        table.insert(errors, "The Key \""
                             .. result.key
                             .. "\" in Section \""
                             .. current_section
-                            .. "\" only accepts the Values \"true\" or \"false\", but was provided \"" 
+                            .. "\" only accepts the Values \"true\" or \"false\", but was provided \""
                             .. result.value
                             .. "\" ["
                             .. line_num
-                            .. "]: " 
-                            .. line
+                            .. "]: "
+                            .. string_helper.trim(line)
                         )
                     end
                 elseif (value_type == "string") then
                     set_config_value(config, current_section, result.key, result.value)
-                    current_section_type_table[result.key] = "set"
                 end
             end
         end
@@ -328,7 +351,7 @@ function config_file.load()
     for section, section_table in pairs(config_type_table) do
         for key, value in pairs(section_table) do
             if (value ~= "set") then
-                table.insert(errors, "The Key \"" 
+                table.insert(errors, "The Key \""
                     .. key
                     .. "\" in Section \""
                     .. section
@@ -339,7 +362,7 @@ function config_file.load()
     end
 
     if (table_helper.is_empty(errors)) then
-        return config --[[@as Config]], nil
+        return fix_config(config), nil
     else
         return nil, errors
     end

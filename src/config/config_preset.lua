@@ -11,7 +11,10 @@ config_preset.text =
 
 ; Most Settings can be either `true` or `false`, if you want to change them, replace the existing value (eg. replace `false` with `true` or vice versa).
 ; Anything following a Semicolon (;) is a Comment and will be ignored
-; Don't forget you need to save this file and then reload the Script to apply changes to the Configuration.
+; You need to save this file and then reload the Script to apply changes to the Configuration.
+; If the Script is running, you can use the Menu `Script > Refresh` or F5 in the Console
+; If the Script is stopped, you have to double-click on the Script in the List (or Right Click > Toggle)
+; You can delete, rename or move this file to have another Config generated on the next start
 
 
 
@@ -250,7 +253,6 @@ action_perform = X2 A
 action_cycle = X2 X
 lead_take = X2 B
 lead_give = X2 Y
-
 ]]
 
 return config_preset

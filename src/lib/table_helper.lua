@@ -1,6 +1,46 @@
 ---@class TableHelper
 local table_helper = {}
 
+---@param value any
+---@return string
+local function pretty_tostring(value)
+    if (type(value) ~= "string") then
+        return tostring(value)
+    else
+        return "\"" .. tostring(value) .. "\""
+    end
+end
+
+---@param tbl table
+---@param indent? integer
+---@param base_nesting_level? integer
+---@return string
+function table_helper.dump(tbl, indent, base_nesting_level)
+    indent = indent or 2
+    base_nesting_level = base_nesting_level or 0
+
+    local text = ""
+
+    for key, value in pairs(tbl) do
+        if (type(value) == "table") then
+            text = text
+                .. string.rep(" ", base_nesting_level * indent)
+                .. pretty_tostring(key)
+                .. " = "
+                .. "\n"
+                .. table_helper.dump(value, indent, base_nesting_level + 1)
+        else
+            text = text
+                .. string.rep(" ", base_nesting_level * indent)
+                .. pretty_tostring(key)
+                .. " = "
+                .. pretty_tostring(value)
+                .. "\n"
+        end
+    end
+    return text
+end
+
 ---@param tbl table
 ---@return boolean
 function table_helper.is_empty(tbl)
