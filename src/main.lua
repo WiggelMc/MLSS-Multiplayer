@@ -1,6 +1,7 @@
 local table_helper = require "lib.table_helper"
 local player = require "game.player"
 local game_mode = require "game.game_mode"
+local config_file = require "config.config_file"
 
 local ConfigData
 local updateGameData, get_other_player, get_byte_data, get_game_mode, get_front_player, get_battle_player
@@ -180,25 +181,8 @@ function redraw_gui_text(game_data)
     end
 end
 
----@param processID integer
----@return nil
-function exit(processID)
-    gui.use_surface("client")
-    gui.clearGraphics()
-
-    print("\nMLSS Multiplayer stopped (ID: " .. processID .. ") \n")
-end
-
----@return nil
-function main()
-    math.randomseed(os.time())
-    local processID = math.random(10000, 99999)
-    print("\n\n\nMLSS Multiplayer started (ID: " .. processID .. ") \n")
-
-    event.onexit(function()
-        exit(processID)
-    end)
-
+---@param config Config
+local function run_gameloop(config)
     local game_data = get_game_data()
     redraw_gui_text(game_data)
 
@@ -220,6 +204,46 @@ function main()
 
         joypad.set(get_input(game_data))
         emu.frameadvance()
+    end
+end
+
+---@param process_id integer
+---@return nil
+function exit(process_id)
+    gui.use_surface("client")
+    gui.clearGraphics()
+
+    print("\nMLSS Multiplayer stopped (ID: " .. process_id .. ") \n")
+end
+
+---@return nil
+function main()
+    math.randomseed(os.time())
+    local process_id = math.random(10000, 99999)
+    print("\n\n\nMLSS Multiplayer started (ID: " .. process_id .. ") \n")
+
+    event.onexit(function()
+        exit(process_id)
+    end)
+
+    if (config_file.exists()) then
+        local config, errors = config_file.load()
+        if (config ~= nil) then
+            run_gameloop(config)
+        else
+            errors = errors or {}
+            print("\n" .. #errors .. " Errors loading Config File:\n")
+            for _, error in ipairs(errors) do
+                print(error)
+                print("\n")
+            end
+            print("\n")
+        end
+    else
+        config_file.generate_preset()
+        print("\nThe Config File was generated (" .. config_file.file_name .. ").")
+        print("It can be found in the same Directory as the Script.")
+        print("Edit it now and then reload the Script to start playing.\n")
     end
 end
 

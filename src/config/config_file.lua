@@ -1,4 +1,5 @@
 local config_preset = require "config.config_preset"
+local table_helper  = require "lib.table_helper"
 ---@class ConfigFileClass
 local config_file = {}
 
@@ -35,6 +36,40 @@ local config_file = {}
 ---@field lead_take string
 ---@field lead_give string
 
+---@type InputLayout
+local input_config_types = {
+    left = "string",
+    right = "string",
+    up = "string",
+    down = "string",
+    menu = "string",
+    menu_confirm = "string",
+    menu_cancel = "string",
+    menu_start = "string",
+    menu_L = "string",
+    menu_R = "string",
+    action_perform = "string",
+    action_cycle = "string",
+    lead_take = "string",
+    lead_give = "string"
+}
+
+local config_types = {
+    ["Gameplay"] = {
+        allow_lead_take = "boolean",
+        allow_lead_give = "boolean"
+    },
+    ["Debug"] = {
+        log_inputs = "boolean",
+        show_gui_rect = "boolean",
+        show_mode = "boolean",
+        show_front_player = "boolean",
+        show_battle_player = "boolean"
+    },
+    ["Mario"] = input_config_types,
+    ["Luigi"] = input_config_types
+}
+
 config_file.file_name = "mlss_multiplayer.ini"
 
 ---@return boolean
@@ -67,14 +102,14 @@ end
 ---@return string
 local function trim_front(str)
     local result = string.gsub(str, "^%s+(.-)$", "%1")
-    return result
+    return result or ""
 end
 
 ---@param str string
 ---@return string
 local function trim(str)
     local result = string.gsub(str, "^%s+(.-)%s+$", "%1")
-    return result
+    return result or ""
 end
 
 
@@ -199,6 +234,15 @@ local function parse(line)
 end
 
 
+---@param config table<string,string>?
+---@param section string
+---@param key string
+---@param value any
+---@return nil
+local function set_config_value(config, section, key, value)
+
+end
+
 ---@return Config?, string[]?
 function config_file.load()
     local file = io.open(config_file.file_name, "r")
@@ -207,30 +251,98 @@ function config_file.load()
         error("Config File does not exist")
     end
 
+    local config_type_table = table_helper.deepcopy(config_types)
     local config = {}
+    ---@type string[]
     local errors = {}
     local line_num = 1
     ---@type string?
     local current_section = nil
+    ---@type table<string,string>?
+    local current_section_type_table = nil
 
     for line in file:lines() do
-        for character in string.gmatch(line, ".") do
-            local result = parse(line)
-            if (result.type == "Error") then
-                table.insert(errors, "[Could not parse Line " .. line_num .. "]: " .. line)
-            elseif (result.type == "Section") then
-                current_section = result.name
-            elseif (result.type == "Value") then
-                -- TODO: Parse Keys
-                -- detect missing
-                -- detect duplicate
-            end
+        local result = parse(line)
+        
+        if (result.type == "Error") then
+            table.insert(errors, "Could not parse Line [" .. line_num .. "]: " .. line)
+        elseif (result.type == "Section") then
+            current_section = result.name
+            current_section_type_table = config_type_table[current_section]
+        elseif (result.type == "Value") then
+            if (current_section_type_table ~= nil and current_section ~= nil) then
+                local value_type = current_section_type_table[result.key]
 
-            line_num = line_num + 1
+                if (value_type == nil) then
+                    table.insert(errors, "Section \"" 
+                        .. current_section 
+                        .. "\" does does not accept the Key \"" 
+                        .. result.key
+                        .. "\" ["
+                        .. line_num 
+                        .. "]: " 
+                        .. line
+                    )
+                elseif (value_type == "set") then
+                    table.insert(errors, "The Key \"" 
+                        .. result.key
+                        .. "\" was set twice in Section \"" 
+                        .. current_section
+                        .. "\" ["
+                        .. line_num
+                        .. "]: " 
+                        .. line
+                    )
+                elseif (value_type == "boolean") then
+                    if (result.value == "true") then
+                        set_config_value(config, current_section, result.key, true)
+                        current_section_type_table[result.key] = "set"
+                    elseif (result.value == "false") then
+                        set_config_value(config, current_section, result.key, false)
+                        current_section_type_table[result.key] = "set"
+                    else
+                        table.insert(errors, "The Key \"" 
+                            .. result.key
+                            .. "\" in Section \""
+                            .. current_section
+                            .. "\" only accepts the Values \"true\" or \"false\", but was provided \"" 
+                            .. result.value
+                            .. "\" ["
+                            .. line_num
+                            .. "]: " 
+                            .. line
+                        )
+                    end
+                elseif (value_type == "string") then
+                    set_config_value(config, current_section, result.key, result.value)
+                    current_section_type_table[result.key] = "set"
+                end
+            end
+        end
+
+        line_num = line_num + 1
+    end
+
+    file:close()
+
+    for section, section_table in pairs(config_type_table) do
+        for key, value in pairs(section_table) do
+            if (value ~= "set") then
+                table.insert(errors, "The Key \"" 
+                    .. key
+                    .. "\" in Section \""
+                    .. section
+                    .. "\" was not set"
+                )
+            end
         end
     end
 
-    io.close(file)
+    if (table_helper.is_empty(errors)) then
+        return config --[[@as Config]], nil
+    else
+        return nil, errors
+    end
 end
 
 return config_file
