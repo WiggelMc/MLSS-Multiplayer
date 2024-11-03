@@ -1,19 +1,19 @@
 {
-    "runtime.version": "Lua 5.4",
-    "workspace.ignoreSubmodules": false,
-    "workspace.library": [
-        "typedefs/?.lua"
-    ],
-    "runtime.path": [
-        "src/?.lua"
-    ],
-    "diagnostics.disable": [
-        "trailing-space"
-    ],
-    "diagnostics.neededFileStatus": {
-        "codestyle-check" : "Any",
-        "name-style-check": "Opened"
-    },
-    "diagnostics.ignoredFiles": "Disable",
-    "diagnostics.libraryFiles": "Disable"
+  "runtime.version": "Lua 5.4",
+  "workspace.ignoreSubmodules": false,
+  "workspace.library": [
+    "typedefs/?.lua"
+  ],
+  "runtime.path": [
+    "src/?.lua"
+  ],
+  "diagnostics.disable": [
+    "trailing-space"
+  ],
+  "diagnostics.neededFileStatus": {
+    "codestyle-check" : "Any",
+    "name-style-check": "Opened"
+  },
+  "diagnostics.ignoredFiles": "Disable",
+  "diagnostics.libraryFiles": "Disable"
 }
