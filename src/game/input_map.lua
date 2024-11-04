@@ -77,9 +77,14 @@ function input_map.get_gba_input(control_state, gameplay_config, joy_inputs)
     else -- "Split"
         gba_inputs.L = joy_inputs[b_player_map.action_cycle] or false
         gba_inputs.R = joy_inputs[a_player_map.action_cycle] or false
-        gba_inputs.Start = (joy_inputs[a_player_map.lead_give] and gameplay_config.allow_lead_give)
-            or (joy_inputs[b_player_map.lead_take] and gameplay_config.allow_lead_take)
-            or false
+        if (gameplay_config.require_coop_swap) then
+            gba_inputs.Start = (joy_inputs[a_player_map.lead_give] and joy_inputs[b_player_map.lead_take])
+                or false
+        else
+            gba_inputs.Start = (joy_inputs[a_player_map.lead_give] and gameplay_config.allow_lead_give)
+                or (joy_inputs[b_player_map.lead_take] and gameplay_config.allow_lead_take)
+                or false
+        end
     end
 
     return gba_inputs

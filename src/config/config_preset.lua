@@ -27,6 +27,9 @@ allow_lead_take = true
 ; Allow the Front Player to Swap.
 allow_lead_give = true
 
+; Require both Players to Swap (The Rear Player needs to take, while the Front Player needs to give)
+require_coop_swap = false
+
 
 
 ; Settings providing the User with information

@@ -14,6 +14,7 @@ local config_file   = {}
 ---@field input_layouts table<Player,InputLayout>
 ---@field allow_lead_take boolean
 ---@field allow_lead_give boolean
+---@field require_coop_swap boolean
 
 ---@class (exact) DebugConfig
 ---@field log_inputs boolean
@@ -72,7 +73,8 @@ local input_config_types = {
 local config_types = {
     ["Gameplay"] = {
         allow_lead_take = "boolean",
-        allow_lead_give = "boolean"
+        allow_lead_give = "boolean",
+        require_coop_swap = "boolean"
     },
     ["Debug"] = {
         log_inputs = "boolean",
