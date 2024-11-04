@@ -1,10 +1,13 @@
 local config_file = require "config.config_file"
 local table_helper = require "lib.table_helper"
+local debug_gui    = require "game.debug_gui"
 
 ---@param config Config
 ---@return nil
 local function run_gameloop(config)
     print(table_helper.dump(config))
+    debug_gui.redraw({}, client.screenheight())
+
     while true do
         emu.frameadvance()
     end

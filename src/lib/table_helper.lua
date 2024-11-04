@@ -12,6 +12,20 @@ local function pretty_tostring(value)
 end
 
 ---@param tbl table
+---@return string
+function table_helper.format_list(tbl)
+    local result = "["
+    local end_padding = ""
+
+    for _, tbl_value in ipairs(tbl) do
+        result = " " .. pretty_tostring(result)
+        end_padding = " "
+    end
+
+    return result .. end_padding .. "]"
+end
+
+---@param tbl table
 ---@param indent? integer
 ---@param base_nesting_level? integer
 ---@return string
@@ -103,6 +117,18 @@ function table_helper.deepcopy(tbl, depth)
         end
     end
     return tbl_copy
+end
+
+---@param tbl table
+---@param value any
+---@return boolean
+function table_helper.contains(tbl, value)
+    for _, tbl_value in pairs(tbl) do
+        if (value == tbl_value) then
+            return true
+        end
+    end
+    return false
 end
 
 return table_helper

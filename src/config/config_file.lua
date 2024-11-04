@@ -68,10 +68,9 @@ local config_types = {
     },
     ["Debug"] = {
         log_inputs = "boolean",
-        show_gui_rect = "boolean",
-        show_mode = "boolean",
-        show_front_player = "boolean",
-        show_battle_player = "boolean"
+        show_hud = "boolean",
+        hud_size = "integer",
+        hud_position = { "top_left", "top_right", "bottom_left", "bottom_right" }
     },
     ["Mario"] = input_config_types,
     ["Luigi"] = input_config_types
@@ -339,6 +338,41 @@ function config_file.load()
                     end
                 elseif (value_type == "string") then
                     set_config_value(config, current_section, result.key, result.value)
+                elseif (value_type == "integer") then
+                    local value = tonumber(result.value)
+                    if (value ~= nil) then
+                        set_config_value(config, current_section, result.key, value)
+                    else
+                        table.insert(errors, "The Key \""
+                            .. result.key
+                            .. "\" in Section \""
+                            .. current_section
+                            .. "\" only accepts integers, but was provided \""
+                            .. result.value
+                            .. "\" ["
+                            .. line_num
+                            .. "]: "
+                            .. string_helper.trim(line)
+                        )
+                    end
+                elseif (type(value_type) == "table") then
+                    if (table_helper.contains(value_type, result.value)) then
+                        set_config_value(config, current_section, result.key, result.value)
+                    else
+                        table.insert(errors, "The Key \""
+                            .. result.key
+                            .. "\" in Section \""
+                            .. current_section
+                            .. "\" only accepts any of "
+                            .. table_helper.format_list(value_type)
+                            .. ", but was provided \""
+                            .. result.value
+                            .. "\" ["
+                            .. line_num
+                            .. "]: "
+                            .. string_helper.trim(line)
+                        )
+                    end
                 end
             end
         end
