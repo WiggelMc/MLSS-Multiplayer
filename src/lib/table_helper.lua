@@ -15,14 +15,22 @@ end
 ---@return string
 function table_helper.format_list(tbl)
     local result = "["
-    local end_padding = ""
+    local first_value = true
 
     for _, tbl_value in ipairs(tbl) do
-        result = " " .. pretty_tostring(result)
-        end_padding = " "
+        if first_value then
+            result = result .. " " .. pretty_tostring(tbl_value)
+        else
+            result = result .. ", " .. pretty_tostring(tbl_value)
+        end
+        first_value = false
     end
 
-    return result .. end_padding .. "]"
+    if first_value then
+        return "[]"
+    else
+        return result .. " ]"
+    end
 end
 
 ---@param tbl table

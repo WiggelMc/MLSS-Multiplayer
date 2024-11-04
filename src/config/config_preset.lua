@@ -36,17 +36,14 @@ allow_lead_give = true
 ; They are displayed in the format `DeviceName InputName` (eg. `X1 DpadLeft` for the Button `DpadLeft` on Controller `X1`).
 log_inputs = false
 
-; Show rectangle around GUI Display.
-show_gui_rect = true
+; Show the HUD, displaying the current input assignment.
+show_hud = true
 
-; Show current Mode in GUI Display (on the left).
-show_mode = true
+; Scale the size of the HUD (must be a number).
+hud_size = 1.0
 
-; Show current Front Player in GUI Display (in the middle).
-show_front_player = true
-
-; Show current Player in Battle in GUI Display (on the right).
-show_battle_player = true
+; Determine, in which corner of the Screen the HUD is displayed (must be any of [top_left, top_right, bottom_left, bottom_right]).
+hud_position = bottom_left
 
 
 

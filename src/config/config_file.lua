@@ -17,10 +17,9 @@ local config_file   = {}
 
 ---@class (exact) DebugConfig
 ---@field log_inputs boolean
----@field show_gui_rect boolean
----@field show_mode boolean
----@field show_front_player boolean
----@field show_battle_player boolean
+---@field show_hud boolean
+---@field hud_size number
+---@field hud_position HudPosition
 
 
 ---@class (exact) InputLayout
@@ -61,6 +60,12 @@ local input_config_types = {
     lead_give = "string"
 }
 
+---@alias HudPosition
+---| "top_left"
+---| "top_right"
+---| "bottom_left"
+---| "bottom_right"
+
 local config_types = {
     ["Gameplay"] = {
         allow_lead_take = "boolean",
@@ -69,7 +74,8 @@ local config_types = {
     ["Debug"] = {
         log_inputs = "boolean",
         show_hud = "boolean",
-        hud_size = "integer",
+        hud_size = "number",
+        ---@type HudPosition[]
         hud_position = { "top_left", "top_right", "bottom_left", "bottom_right" }
     },
     ["Mario"] = input_config_types,
@@ -285,9 +291,9 @@ function config_file.load()
         local result = parse(line)
 
         if (result.type == "Error") then
-            table.insert(errors, "Could not parse Line [" 
-                .. line_num 
-                .. "]: " 
+            table.insert(errors, "Could not parse Line ["
+                .. line_num
+                .. "]: "
                 .. string_helper.trim(line)
             )
         elseif (result.type == "Section") then
@@ -338,7 +344,7 @@ function config_file.load()
                     end
                 elseif (value_type == "string") then
                     set_config_value(config, current_section, result.key, result.value)
-                elseif (value_type == "integer") then
+                elseif (value_type == "number") then
                     local value = tonumber(result.value)
                     if (value ~= nil) then
                         set_config_value(config, current_section, result.key, value)

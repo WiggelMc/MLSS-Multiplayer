@@ -1,4 +1,4 @@
-local config_file = require "config.config_file"
+local config_file  = require "config.config_file"
 local table_helper = require "lib.table_helper"
 local debug_gui    = require "game.debug_gui"
 
@@ -6,9 +6,18 @@ local debug_gui    = require "game.debug_gui"
 ---@return nil
 local function run_gameloop(config)
     print(table_helper.dump(config))
-    debug_gui.redraw({}, client.screenheight())
 
     while true do
+        debug_gui.redraw(
+            {
+                primary = "MARIO",
+                a_player = "Mario",
+                face_button_control = "Split",
+                menu_button_control = "Primary"
+            },
+            debug_gui.get_display_data(),
+            config.debug
+        )
         emu.frameadvance()
     end
     --TODO: This should be in another File
