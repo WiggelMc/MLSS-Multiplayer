@@ -40,11 +40,16 @@ log_inputs = false
 show_hud = true
 
 ; Scale the size of the HUD (must be a number).
-hud_size = 1.0
+hud_scale = 1.0
 
 ; Determine, in which corner of the Screen the HUD is displayed (must be any of [top_left, top_right, bottom_left, bottom_right]).
 hud_position = bottom_left
 
+; Open the Debug Window, which Displays the internal State
+open_debug_window = false
+
+; Scale the size of the Contents of the Debug Window
+debug_window_scale = 1.0
 
 
 ; Configure Controls for either Player.

@@ -1,15 +1,8 @@
+local string_helper = require "lib.string_helper"
 ---@class TableHelper
 local table_helper = {}
 
----@param value any
----@return string
-local function pretty_tostring(value)
-    if (type(value) ~= "string") then
-        return tostring(value)
-    else
-        return "\"" .. tostring(value) .. "\""
-    end
-end
+
 
 ---@param tbl table
 ---@return string
@@ -19,9 +12,9 @@ function table_helper.format_list(tbl)
 
     for _, tbl_value in ipairs(tbl) do
         if first_value then
-            result = result .. " " .. pretty_tostring(tbl_value)
+            result = result .. " " .. string_helper.format(tbl_value)
         else
-            result = result .. ", " .. pretty_tostring(tbl_value)
+            result = result .. ", " .. string_helper.format(tbl_value)
         end
         first_value = false
     end
@@ -47,16 +40,16 @@ function table_helper.dump(tbl, indent, base_nesting_level)
         if (type(value) == "table") then
             text = text
                 .. string.rep(" ", base_nesting_level * indent)
-                .. pretty_tostring(key)
+                .. string_helper.format(key)
                 .. " = "
                 .. "\n"
                 .. table_helper.dump(value, indent, base_nesting_level + 1)
         else
             text = text
                 .. string.rep(" ", base_nesting_level * indent)
-                .. pretty_tostring(key)
+                .. string_helper.format(key)
                 .. " = "
-                .. pretty_tostring(value)
+                .. string_helper.format(value)
                 .. "\n"
         end
     end

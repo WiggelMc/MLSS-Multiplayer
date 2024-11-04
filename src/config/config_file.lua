@@ -18,8 +18,10 @@ local config_file   = {}
 ---@class (exact) DebugConfig
 ---@field log_inputs boolean
 ---@field show_hud boolean
----@field hud_size number
+---@field hud_scale number
 ---@field hud_position HudPosition
+---@field open_debug_window boolean
+---@field debug_window_scale number
 
 
 ---@class (exact) InputLayout
@@ -74,9 +76,11 @@ local config_types = {
     ["Debug"] = {
         log_inputs = "boolean",
         show_hud = "boolean",
-        hud_size = "number",
+        hud_scale = "number",
         ---@type HudPosition[]
-        hud_position = { "top_left", "top_right", "bottom_left", "bottom_right" }
+        hud_position = { "top_left", "top_right", "bottom_left", "bottom_right" },
+        open_debug_window = "boolean",
+        debug_window_scale = "number"
     },
     ["Mario"] = input_config_types,
     ["Luigi"] = input_config_types

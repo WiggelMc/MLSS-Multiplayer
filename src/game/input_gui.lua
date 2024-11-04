@@ -1,7 +1,7 @@
 local player = require "game.player"
 
----@class DebugGuiClass
-local debug_gui = {}
+---@class InputGuiClass
+local input_gui = {}
 
 
 ---@class (exact) DisplayData
@@ -10,7 +10,7 @@ local debug_gui = {}
 
 
 ---@return DisplayData
-function debug_gui.get_display_data()
+function input_gui.get_display_data()
     ---@type DisplayData
     return {
         screen_width = client.screenwidth(),
@@ -80,11 +80,16 @@ local function draw_table(x, y, column_values, row_values, size, anchor)
     end
 end
 
+function input_gui.clear()
+    gui.use_surface("client")
+    gui.clearGraphics()
+end
+
 ---@param control_state ControlState
 ---@param display_data DisplayData
 ---@param debug_config DebugConfig
 ---@return nil
-function debug_gui.redraw(control_state, display_data, debug_config)
+function input_gui.redraw(control_state, display_data, debug_config)
     gui.use_surface("client")
     gui.clearGraphics()
 
@@ -92,7 +97,7 @@ function debug_gui.redraw(control_state, display_data, debug_config)
         return
     end
 
-    local border_size = 4
+    local border_size = 7
 
     ---@type integer
     local top_offset
@@ -138,7 +143,7 @@ function debug_gui.redraw(control_state, display_data, debug_config)
         table.insert(row_values, { [a_player] = "R", [player.get_other(a_player)] = "L" })
     end
 
-    draw_table(left_offset, top_offset, column_values, row_values, debug_config.hud_size, debug_config.hud_position)
+    draw_table(left_offset, top_offset, column_values, row_values, debug_config.hud_scale, debug_config.hud_position)
 end
 
-return debug_gui
+return input_gui
