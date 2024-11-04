@@ -1,0 +1,20 @@
+{
+  "id": "data_schema",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "sets": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "uri-reference"
+        }
+      }
+    },
+    "verbose": {
+      "type": "boolean"
+    }
+  },
+  "required": ["sets", "verbose"]
+}

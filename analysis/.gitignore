@@ -142,6 +142,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# build artifacts
-out
-
+# analysis
+data
