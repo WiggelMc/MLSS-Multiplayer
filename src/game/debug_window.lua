@@ -24,7 +24,7 @@ end
 ---@return nil
 function debug_window.redraw(window, debug_config, byte_data_obj)
     local font_size = math.floor(24.0 * debug_config.debug_window_scale)
-    local row_offset = 40.0 * debug_config.debug_window_scale 
+    local row_offset = 40.0 * debug_config.debug_window_scale
     local border_size = 5
 
     debug_window.clear(window)
@@ -38,7 +38,14 @@ function debug_window.redraw(window, debug_config, byte_data_obj)
         else
             font_color = "#FFDDDDFF"
         end
-        window.DrawText(border_size, border_size + (row_offset * row) - (row_offset / 2), key .. ": " .. string_helper.format_binary(value), font_color, "#00000000", font_size, nil, "bold", "left", "center")
+        window.DrawText(
+            border_size,
+            border_size + (row_offset * row) - (row_offset / 2),
+            key .. ": " .. string_helper.format_binary(value),
+            font_color, "#00000000",
+            font_size, nil, "bold",
+            "left", "center"
+        )
         row = row + 1
     end
     window.Refresh()

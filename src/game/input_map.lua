@@ -81,7 +81,7 @@ function input_map.get_gba_input(control_state, gameplay_config, joy_inputs)
             or (joy_inputs[b_player_map.lead_take] and gameplay_config.allow_lead_take)
             or false
     end
-    
+
     return gba_inputs
 end
 

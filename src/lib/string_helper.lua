@@ -41,7 +41,6 @@ function string_helper.trim(str)
     return result or ""
 end
 
-
 ---@param str string
 ---@return string, string
 function string_helper.take_head(str)

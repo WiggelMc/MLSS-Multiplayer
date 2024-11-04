@@ -120,7 +120,7 @@ function input_gui.redraw(control_state, display_data, debug_config)
         { player.LUIGI, "Luigi" }
     }
 
-    local row_values = {}    
+    local row_values = {}
     table.insert(row_values, { [control_state.primary] = "Dpad" })
 
     ---@type Player

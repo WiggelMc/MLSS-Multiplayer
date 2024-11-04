@@ -11,7 +11,7 @@ end
 ---@param pos integer
 ---@return boolean
 local function read_bit(addr, pos)
-    return bit.check(read_byte(addr), pos) 
+    return bit.check(read_byte(addr), pos)
 end
 
 ---@class (exact) ByteData
