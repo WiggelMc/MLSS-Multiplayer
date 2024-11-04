@@ -36,6 +36,9 @@ allow_lead_give = true
 ; They are displayed in the format `DeviceName InputName` (eg. `X1 DpadLeft` for the Button `DpadLeft` on Controller `X1`).
 log_inputs = false
 
+; Log all Config entries after they are loaded
+log_config = false
+
 ; Show the HUD, displaying the current input assignment.
 show_hud = true
 

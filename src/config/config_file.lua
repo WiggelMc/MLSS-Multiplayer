@@ -17,6 +17,7 @@ local config_file   = {}
 
 ---@class (exact) DebugConfig
 ---@field log_inputs boolean
+---@field log_config boolean
 ---@field show_hud boolean
 ---@field hud_scale number
 ---@field hud_position HudPosition
@@ -75,6 +76,7 @@ local config_types = {
     },
     ["Debug"] = {
         log_inputs = "boolean",
+        log_config = "boolean",
         show_hud = "boolean",
         hud_scale = "number",
         ---@type HudPosition[]
