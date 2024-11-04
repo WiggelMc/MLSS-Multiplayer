@@ -26,7 +26,7 @@ end
 ---@param anchor HudPosition
 ---@return nil
 local function draw_table(x, y, column_values, row_values, size, anchor)
-    size = size * 0.9
+    size = size * 0.85
 
     local header_offset = 15.0 * size
     local row_offset = 40.0 * size
