@@ -1,0 +1,10 @@
+{
+  "name": "mlss-analysis",
+  "version": "1.0.0",
+  "description": "Analyse generated RAM-Snapshots",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "author": "WiggelMc"
+}

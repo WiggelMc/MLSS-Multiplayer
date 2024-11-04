@@ -26,8 +26,6 @@
 --  cutscene v overworld
 --  pause + textbox + cutscene v battle
 
-
-
 local frames_i = 0
 local iterations_i = 0
 
@@ -45,7 +43,7 @@ while (iterations_i < iterations) do
         iterations_i = iterations_i + 1
 
         local bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
-        local filename = "../../logs/snapshots/snapshot_" .. id .. "_" .. iterations_i
+        local filename = "../logs/snapshots/snapshot_" .. id .. "_" .. iterations_i
 
         client.screenshot(filename .. ".png")
         savestate.save(filename .. ".State", true)
