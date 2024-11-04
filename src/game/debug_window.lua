@@ -20,9 +20,9 @@ end
 
 ---@param window LuaCanvas
 ---@param debug_config DebugConfig
----@param byte_data_obj ByteData
+---@param data ByteData
 ---@return nil
-function debug_window.redraw(window, debug_config, byte_data_obj)
+function debug_window.redraw(window, debug_config, data)
     local font_size = math.floor(24.0 * debug_config.debug_window_scale)
     local row_offset = 40.0 * debug_config.debug_window_scale
     local border_size = 5
@@ -30,7 +30,7 @@ function debug_window.redraw(window, debug_config, byte_data_obj)
     debug_window.clear(window)
 
     local row = 1
-    for key, value in pairs(byte_data_obj) do
+    for key, value in pairs(data) do
         ---@type luacolor
         local font_color
         if (row % 2 == 0) then
