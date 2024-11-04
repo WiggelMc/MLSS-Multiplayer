@@ -12,6 +12,8 @@ local input_logic  = require "game.input_logic"
 ---@field display_data DisplayData
 ---@field input_data table<string, boolean>
 
+
+---@return GameData
 local function get_game_data()
     local bytes = byte_data.read_byte_data()
     ---@type GameData

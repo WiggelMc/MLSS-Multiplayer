@@ -80,6 +80,7 @@ local function draw_table(x, y, column_values, row_values, size, anchor)
     end
 end
 
+---@return nil
 function input_gui.clear()
     gui.use_surface("client")
     gui.clearGraphics()
