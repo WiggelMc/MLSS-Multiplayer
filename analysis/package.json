@@ -7,5 +7,5 @@
   "scripts": {
     "start": "node src/main.js"
   },
-  "author": "WiggelMc"
+  "author": "Wiggel"
 }

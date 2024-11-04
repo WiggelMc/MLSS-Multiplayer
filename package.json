@@ -1,12 +1,13 @@
 {
   "name": "mlss_multiplayer",
-	"description": "Mario & Luigi: Superstar Saga - Multiplayer Script for BizHawk",
-	"version": "0.0.1",
-	"author": "WiggelMc",
+  "description": "Mario & Luigi: Superstar Saga - Multiplayer Script for BizHawk",
+  "version": "0.2",
+  "author": "Wiggel",
   "scripts": {
-    "build": "cd src && luabundler bundle main.lua --path=?.lua --output=../out/mlss_multiplayer.lua --lua=\"5.3\" --isolate"
+    "build": "cd src && cross-var luabundler bundle main.lua --path=?.lua --output=../out/mlss_multiplayer_$npm_package_version.lua --lua=\"5.3\" --isolate"
   },
   "dependencies": {
+    "cross-var": "^1.1.0",
     "luabundler": "^1.2.3"
   }
 }

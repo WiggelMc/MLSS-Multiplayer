@@ -5,6 +5,8 @@ local config_preset = {}
 config_preset.text =
 [[
 ; Mario & Luigi: Superstar Saga - Multiplayer Script for BizHawk
+; by Wiggel
+
 ; Configuration
 
 
