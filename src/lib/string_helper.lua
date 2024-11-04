@@ -1,4 +1,4 @@
----@class StringHelper
+---@class StringHelperClass
 local string_helper = {}
 
 ---@param value any

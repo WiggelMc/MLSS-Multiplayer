@@ -1,4 +1,5 @@
 local string_helper = require "lib.string_helper"
+
 ---@class DebugWindowClass
 local debug_window = {}
 

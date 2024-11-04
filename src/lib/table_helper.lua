@@ -1,5 +1,6 @@
 local string_helper = require "lib.string_helper"
----@class TableHelper
+
+---@class TableHelperClass
 local table_helper = {}
 
 
