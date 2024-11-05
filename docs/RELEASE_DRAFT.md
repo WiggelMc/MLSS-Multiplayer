@@ -1,2 +1,2 @@
-# Changelog
+## Changelog
 - TODO: list changes
