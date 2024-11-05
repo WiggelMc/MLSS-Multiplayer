@@ -21,7 +21,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Get Version
-        run: echo "version=$(npm pkg get version --json | sed 's/"//g')" >> GITHUB_OUTPUT
+        run: echo "version=$(npm pkg get version --json | sed 's/"//g')" >> $GITHUB_OUTPUT
         id: version
 
       - name: Check if Release Already Exists
