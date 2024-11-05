@@ -1,6 +1,7 @@
 ---@class ConfigPresetClass
 local config_preset = {}
 
+
 ---@type string
 config_preset.text =
 [[

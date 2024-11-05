@@ -1,5 +1,5 @@
 local player = require "game.player"
-local logic_helper = require "lib.logic_helper"
+local logic_helper = require "logic_helper"
 
 ---@class InputGuiClass
 local input_gui = {}

@@ -4,7 +4,7 @@
   "version": "0.2",
   "author": "Wiggel",
   "scripts": {
-    "build": "cd src && cross-var luabundler bundle main.lua --path=?.lua --output=../out/mlss_multiplayer_$npm_package_version.lua --lua=\"5.3\" --isolate"
+    "build": "cd src && cross-var luabundler bundle main.lua --path=?.lua --path=../lib/?.lua --output=../out/mlss_multiplayer_$npm_package_version.lua --lua=\"5.3\" --isolate"
   },
   "dependencies": {
     "cross-var": "^1.1.0",

@@ -1,4 +1,4 @@
-local string_helper = require "lib.string_helper"
+local string_helper = require "string_helper"
 
 ---@class TableHelperClass
 local table_helper = {}

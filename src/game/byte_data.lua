@@ -1,4 +1,4 @@
-local table_helper = require "lib.table_helper"
+local table_helper = require "table_helper"
 
 ---@class ByteDataClass
 local byte_data = {}

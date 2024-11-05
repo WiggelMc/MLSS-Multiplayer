@@ -5,7 +5,11 @@
   "main": "src/main.js",
   "type": "module",
   "scripts": {
-    "start": "node src/main.js"
+    "start": "node src/main.js",
+    "build-script": "cd scripts && luabundler bundle ram_export.lua --path=?.lua --path=../../lib/?.lua --output=../out/ram_export.lua --lua=\"5.3\" --isolate"
   },
-  "author": "Wiggel"
+  "author": "Wiggel",
+  "dependencies": {
+    "luabundler": "^1.2.3"
+  }
 }

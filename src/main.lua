@@ -1,5 +1,5 @@
-local config_file  = require "config.config_file"
-local table_helper = require "lib.table_helper"
+local config_data  = require "config.config_data"
+local table_helper = require "table_helper"
 local input_gui    = require "game.input_gui"
 local debug_window = require "game.debug_window"
 local byte_data    = require "game.byte_data"
@@ -103,8 +103,8 @@ local function main()
         exit(process_id, window)
     end)
 
-    if (config_file.exists()) then
-        local config, errors = config_file.load()
+    if (config_data.exists()) then
+        local config, errors = config_data.load()
         if (config ~= nil) then
             if (config.debug.open_debug_window) then
                 window = debug_window.open()
@@ -120,8 +120,8 @@ local function main()
             print("")
         end
     else
-        config_file.generate_preset()
-        print("\nThe Config File was generated (" .. config_file.file_name .. ").\n")
+        config_data.generate_preset()
+        print("\nThe Config File was generated (" .. config_data.file_name .. ").\n")
         print("It can be found in the same Directory as the Script.")
         print("Reload the Script to start playing.\n")
     end

@@ -1,5 +1,5 @@
-local string_helper = require "lib.string_helper"
-local logic_helper  = require "lib.logic_helper"
+local string_helper = require "string_helper"
+local logic_helper  = require "logic_helper"
 
 ---@class DebugWindowClass
 local debug_window  = {}

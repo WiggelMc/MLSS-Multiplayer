@@ -1,100 +1,14 @@
-local config_preset = require "config.config_preset"
-local table_helper  = require "lib.table_helper"
-local player        = require "game.player"
-local string_helper = require "lib.string_helper"
+local table_helper  = require "table_helper"
+local string_helper = require "string_helper"
 
 ---@class ConfigFileClass
 local config_file   = {}
 
----@class (exact) Config
----@field gameplay GameplayConfig
----@field debug DebugConfig
 
----@class (exact) GameplayConfig
----@field input_layouts table<Player,InputLayout>
----@field allow_lead_take boolean
----@field allow_lead_give boolean
----@field require_coop_swap boolean
-
----@class (exact) DebugConfig
----@field log_inputs boolean
----@field log_config boolean
----@field show_hud boolean
----@field hud_scale number
----@field hud_position HudPosition
----@field open_debug_window boolean
----@field debug_window_scale number
-
-
----@class (exact) InputLayout
----@field left string
----@field right string
----@field up string
----@field down string
----@field menu string
----@field menu_confirm string
----@field menu_cancel string
----@field menu_start string
----@field menu_L string
----@field menu_R string
----@field action_perform string
----@field action_cycle string
----@field lead_take string
----@field lead_give string
-
----@class InputLayoutTypes : InputLayout
----@field device string
-
----@type InputLayoutTypes
-local input_config_types = {
-    device = "string",
-    left = "string",
-    right = "string",
-    up = "string",
-    down = "string",
-    menu = "string",
-    menu_confirm = "string",
-    menu_cancel = "string",
-    menu_start = "string",
-    menu_L = "string",
-    menu_R = "string",
-    action_perform = "string",
-    action_cycle = "string",
-    lead_take = "string",
-    lead_give = "string"
-}
-
----@alias HudPosition
----| "top_left"
----| "top_right"
----| "bottom_left"
----| "bottom_right"
-
-local config_types = {
-    ["Gameplay"] = {
-        allow_lead_take = "boolean",
-        allow_lead_give = "boolean",
-        require_coop_swap = "boolean"
-    },
-    ["Debug"] = {
-        log_inputs = "boolean",
-        log_config = "boolean",
-        show_hud = "boolean",
-        hud_scale = "number",
-        ---@type HudPosition[]
-        hud_position = { "top_left", "top_right", "bottom_left", "bottom_right" },
-        open_debug_window = "boolean",
-        debug_window_scale = "number"
-    },
-    ["Mario"] = input_config_types,
-    ["Luigi"] = input_config_types
-}
-
-config_file.file_name = "mlss_multiplayer.ini"
-
+---@param file_name string
 ---@return boolean
-function config_file.exists()
-    local file = io.open(config_file.file_name, "r")
+function config_file.exists(file_name)
+    local file = io.open(file_name, "r")
     if (file ~= nil) then
         file:close()
         return true
@@ -103,17 +17,19 @@ function config_file.exists()
     end
 end
 
+---@param file_name string
+---@param text string
 ---@return nil
-function config_file.generate_preset()
-    if config_file.exists() then
+function config_file.generate_preset(file_name, text)
+    if config_file.exists(file_name) then
         error("Config File already exists")
     end
-    local file = io.open(config_file.file_name, "w")
+    local file = io.open(file_name, "w")
     if file == nil then
         error("File could not be opened")
     end
 
-    file:write(config_preset.text)
+    file:write(text)
     file:flush()
     file:close()
 end
@@ -231,62 +147,17 @@ local function parse(line)
     end
 end
 
----@return table
-local function init_config()
-    return {
-        gameplay = {
-            input_layouts = {
-                [player.MARIO] = {},
-                [player.LUIGI] = {}
-            }
-        },
-        debug = {}
-    }
-end
-
----@param config table
----@param section string
----@param key string
----@param value any
----@return nil
-local function set_config_value(config, section, key, value)
-    if (section == "Gameplay") then
-        config["gameplay"][key] = value
-    elseif (section == "Debug") then
-        config["debug"][key] = value
-    elseif (section == "Mario") then
-        config["gameplay"]["input_layouts"][player.MARIO][key] = value
-    elseif (section == "Luigi") then
-        config["gameplay"]["input_layouts"][player.LUIGI][key] = value
-    end
-end
-
----@param config table
----@return Config
-local function fix_config(config)
-    local layouts = config["gameplay"]["input_layouts"]
-    for _, layout in pairs(layouts) do
-        local device = layout.device
-        layout.device = nil
-        if (device ~= "") then
-            for key, value in pairs(layout) do
-                layout[key] = device .. " " .. value
-            end
-        end
-    end
-    return config --[[@as Config]]
-end
-
----@return Config?, string[]?
-function config_file.load()
-    local file = io.open(config_file.file_name, "r")
+---@param file_name string
+---@param type_table table
+---@param set_value fun(section: string, key: string, value: any): nil
+---@return string[]?
+function config_file.read(file_name, type_table, set_value)
+    local file = io.open(file_name, "r")
 
     if (file == nil) then
         error("Config File does not exist")
     end
 
-    local config_type_table = table_helper.deepcopy(config_types)
-    local config = init_config()
     ---@type string[]
     local errors = {}
     local line_num = 1
@@ -306,7 +177,7 @@ function config_file.load()
             )
         elseif (result.type == "Section") then
             current_section = result.name
-            current_section_type_table = config_type_table[current_section]
+            current_section_type_table = type_table[current_section]
         elseif (result.type == "Value") then
             if (current_section_type_table ~= nil and current_section ~= nil) then
                 local value_type = current_section_type_table[result.key]
@@ -334,9 +205,9 @@ function config_file.load()
                     )
                 elseif (value_type == "boolean") then
                     if (result.value == "true") then
-                        set_config_value(config, current_section, result.key, true)
+                        set_value(current_section, result.key, true)
                     elseif (result.value == "false") then
-                        set_config_value(config, current_section, result.key, false)
+                        set_value(current_section, result.key, false)
                     else
                         table.insert(errors, "The Key \""
                             .. result.key
@@ -351,11 +222,11 @@ function config_file.load()
                         )
                     end
                 elseif (value_type == "string") then
-                    set_config_value(config, current_section, result.key, result.value)
+                    set_value(current_section, result.key, result.value)
                 elseif (value_type == "number") then
                     local value = tonumber(result.value)
                     if (value ~= nil) then
-                        set_config_value(config, current_section, result.key, value)
+                        set_value(current_section, result.key, value)
                     else
                         table.insert(errors, "The Key \""
                             .. result.key
@@ -371,7 +242,7 @@ function config_file.load()
                     end
                 elseif (type(value_type) == "table") then
                     if (table_helper.contains(value_type, result.value)) then
-                        set_config_value(config, current_section, result.key, result.value)
+                        set_value(current_section, result.key, result.value)
                     else
                         table.insert(errors, "The Key \""
                             .. result.key
@@ -396,7 +267,7 @@ function config_file.load()
 
     file:close()
 
-    for section, section_table in pairs(config_type_table) do
+    for section, section_table in pairs(type_table) do
         for key, value in pairs(section_table) do
             if (value ~= "set") then
                 table.insert(errors, "The Key \""
@@ -410,9 +281,9 @@ function config_file.load()
     end
 
     if (table_helper.is_empty(errors)) then
-        return fix_config(config), nil
+        return nil
     else
-        return nil, errors
+        return errors
     end
 end
 

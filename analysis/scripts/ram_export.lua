@@ -1,3 +1,4 @@
+local config_file = require "config_file"
 
 -- TODO: use loop
 --  ensure that memory is read in a single frame

@@ -1,6 +1,6 @@
 ---@diagnostic disable: name-style-check
 local player = require "game.player"
-local logic_helper = require "lib.logic_helper"
+local logic_helper = require "logic_helper"
 
 ---@class InputMapClass
 local input_map = {}

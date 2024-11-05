@@ -5,7 +5,9 @@
     "typedefs/?.lua"
   ],
   "runtime.path": [
-    "src/?.lua"
+    "src/?.lua",
+    "lib/?.lua",
+    "analysis/scripts/?.lua"
   ],
   "diagnostics.disable": [
     "trailing-space"
