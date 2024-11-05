@@ -1,0 +1,58 @@
+name: 'Release'
+on:
+  workflow_dispatch:
+jobs:
+  release:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: elm-build/package-lock.json
+
+      - name: Get Version
+        run: echo "::set-output name=version::$(npm pkg get version --json | sed 's/"//g')"
+        id: version
+
+      - name: Check if Release Already Exists
+        id: check_release
+        run: |
+          if gh release view "${{ steps.version.outputs.version }}" &>/dev/null ; then
+            echo "A release with this tag already exists. Failing the job."
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Install packages
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          draft: true
+          prerelease: false
+          release_name: MLSS-Multiplayer ${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body_path: docs/RELEASE_DRAFT.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload Artifact
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./out/mlss_multiplayer_${{ steps.version.outputs.version }}.lua
+          asset_name: mlss_multiplayer_${{ steps.version.outputs.version }}.lua
+          asset_content_type: text/x-lua
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
