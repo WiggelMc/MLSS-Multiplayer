@@ -1,4 +1,5 @@
 local player = require "game.player"
+local logic_helper = require "lib.logic_helper"
 
 ---@class InputGuiClass
 local input_gui = {}
@@ -101,20 +102,18 @@ function input_gui.redraw(control_state, display_data, debug_config)
     local border_size = 7
 
     ---@type integer
-    local top_offset
-    if (debug_config.hud_position == "top_left" or debug_config.hud_position == "top_right") then
-        top_offset = border_size
-    else
-        top_offset = display_data.screen_height - border_size
-    end
+    local top_offset = logic_helper.ternary(
+        debug_config.hud_position == "top_left" or debug_config.hud_position == "top_right",
+        border_size,
+        display_data.screen_height - border_size
+    )
 
     ---@type integer
-    local left_offset
-    if (debug_config.hud_position == "top_left" or debug_config.hud_position == "bottom_left") then
-        left_offset = border_size
-    else
-        left_offset = display_data.screen_width - border_size
-    end
+    local left_offset = logic_helper.ternary(
+        debug_config.hud_position == "top_left" or debug_config.hud_position == "bottom_left",
+        border_size,
+        display_data.screen_width - border_size
+    )
 
     local column_values = {
         { player.MARIO, "Mario" },
@@ -125,12 +124,11 @@ function input_gui.redraw(control_state, display_data, debug_config)
     table.insert(row_values, { [control_state.primary] = "Dpad" })
 
     ---@type Player
-    local a_player
-    if (control_state.a_player == "Mario") then
-        a_player = player.MARIO
-    else -- "Primary"
-        a_player = control_state.primary
-    end
+    local a_player = logic_helper.ternary(
+        control_state.a_player == "Mario",
+        player.MARIO,
+        control_state.primary
+    )
 
     if (control_state.face_button_control == "Primary") then
         table.insert(row_values, { [a_player] = "A/B" })

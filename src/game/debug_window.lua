@@ -1,7 +1,8 @@
 local string_helper = require "lib.string_helper"
+local logic_helper  = require "lib.logic_helper"
 
 ---@class DebugWindowClass
-local debug_window = {}
+local debug_window  = {}
 
 
 ---@param window LuaCanvas
@@ -33,12 +34,7 @@ function debug_window.redraw(window, debug_config, data)
     local row = 1
     for key, value in pairs(data) do
         ---@type luacolor
-        local font_color
-        if (row % 2 == 0) then
-            font_color = "#FFBBFFCC"
-        else
-            font_color = "#FFDDDDFF"
-        end
+        local font_color = logic_helper.ternary(row % 2 == 0, "#FFBBFFCC", "#FFDDDDFF")
         window.DrawText(
             border_size,
             border_size + (row_offset * row) - (row_offset / 2),

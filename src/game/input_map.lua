@@ -1,5 +1,6 @@
 ---@diagnostic disable: name-style-check
 local player = require "game.player"
+local logic_helper = require "lib.logic_helper"
 
 ---@class InputMapClass
 local input_map = {}
@@ -46,12 +47,11 @@ function input_map.get_gba_input(control_state, gameplay_config, joy_inputs)
     local primary_map = gameplay_config.input_layouts[control_state.primary]
 
     ---@type Player
-    local a_player
-    if (control_state.a_player == "Mario") then
-        a_player = player.MARIO
-    else -- "Primary"
-        a_player = control_state.primary
-    end
+    local a_player = logic_helper.ternary(
+        control_state.a_player == "Mario",
+        player.MARIO,
+        control_state.primary
+    )
     local a_player_map = gameplay_config.input_layouts[a_player]
     local b_player_map = gameplay_config.input_layouts[player.get_other(a_player)]
 
