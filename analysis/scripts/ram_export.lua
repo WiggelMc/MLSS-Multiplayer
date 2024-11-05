@@ -27,39 +27,69 @@ local config_file = require "config_file"
 --  cutscene v overworld
 --  pause + textbox + cutscene v battle
 
-local frames_i = 0
-local iterations_i = 0
+-- config_options:
+-- [Buckets] (Dict with directory = input)
 
-local frames = 60
-local iterations = 5
+local config_file_name = "ram_export.ini"
 
-math.randomseed(os.time())
-local id = math.random(100000, 999999)
+local config_preset_text = [[
+; Format: bucket_name = input
+[Buckets]
 
-while (iterations_i < iterations) do
-    frames_i = frames_i + 1
+1 = Keypad1
+2 = Keypad2
+]]
 
-    if (frames_i >= frames) then
-        frames_i = 0
-        iterations_i = iterations_i + 1
+local function main()
+    ---@type table<string, string>
+    local config = {}
 
-        local bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
-        local filename = "../logs/snapshots/snapshot_" .. id .. "_" .. iterations_i
-
-        client.screenshot(filename .. ".png")
-        savestate.save(filename .. ".State", true)
-        local file = io.open(filename .. ".bin", "wb")
-
-        if (file == nil) then
-            error("File could not be created")
+    if (config_file.exists) then
+        local function set_config_value(section, key, value)
+            config[value] = key
         end
-
-        file:write(string.char(table.unpack(bytes)))
-
-        file:flush()
-        file:close()
-        print("Written File " .. iterations_i)
+        config_file.read(config_file_name, {}, { "Buckets" }, set_config_value)
+    else
+        config_file.generate_preset(config_file_name, config_preset_text)
+        return
     end
 
-    emu.frameadvance()
+    local frames_i = 0
+    local iterations_i = 0
+
+    local frames = 60
+    local iterations = 5
+
+    math.randomseed(os.time())
+    local id = math.random(100000, 999999)
+
+    while (iterations_i < iterations) do
+        frames_i = frames_i + 1
+
+        if (frames_i >= frames) then
+            frames_i = 0
+            iterations_i = iterations_i + 1
+
+            local bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
+            local filename = "../logs/snapshots/snapshot_" .. id .. "_" .. iterations_i
+
+            client.screenshot(filename .. ".png")
+            savestate.save(filename .. ".State", true)
+            local file = io.open(filename .. ".bin", "wb")
+
+            if (file == nil) then
+                error("File could not be created")
+            end
+
+            file:write(string.char(table.unpack(bytes)))
+
+            file:flush()
+            file:close()
+            print("Written File " .. iterations_i)
+        end
+
+        emu.frameadvance()
+    end
 end
+
+main()
