@@ -3,6 +3,7 @@ local player = require "game.player"
 ---@class InputLogicClass
 local input_logic = {}
 
+
 ---@param data ByteData
 ---@return ControlState
 function input_logic.get_control_state(data)

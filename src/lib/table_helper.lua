@@ -4,7 +4,6 @@ local string_helper = require "lib.string_helper"
 local table_helper = {}
 
 
-
 ---@param tbl table
 ---@return string
 function table_helper.format_list(tbl)

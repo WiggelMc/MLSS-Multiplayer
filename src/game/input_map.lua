@@ -5,6 +5,7 @@ local logic_helper = require "lib.logic_helper"
 ---@class InputMapClass
 local input_map = {}
 
+
 ---@class (exact) ControlState
 ---@field primary Player
 ---@field a_player ("Mario" | "Primary")

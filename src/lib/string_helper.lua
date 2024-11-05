@@ -1,6 +1,7 @@
 ---@class StringHelperClass
 local string_helper = {}
 
+
 ---@param value any
 ---@return string
 function string_helper.format(value)

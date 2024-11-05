@@ -1,6 +1,7 @@
 ---@class PlayerClass
 local player = {}
 
+
 ---@enum Player
 player = {
     MARIO = "MARIO",

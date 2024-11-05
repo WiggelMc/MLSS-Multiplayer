@@ -1,5 +1,8 @@
+local table_helper = require "lib.table_helper"
+
 ---@class ByteDataClass
 local byte_data = {}
+
 
 ---@param addr integer
 ---@return integer

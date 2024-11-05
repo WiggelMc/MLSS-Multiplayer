@@ -6,6 +6,7 @@ local byte_data    = require "game.byte_data"
 local input_map    = require "game.input_map"
 local input_logic  = require "game.input_logic"
 
+
 ---@class (exact) GameData
 ---@field byte_data ByteData
 ---@field control_state ControlState
@@ -83,6 +84,14 @@ end
 
 ---@return nil
 local function main()
+    if (emu.getsystemid() == "NULL") then
+        print("\nMLSS Multiplayer: No ROM loaded")
+        print("Waiting for Start...\n")
+        while true do
+            emu.frameadvance()
+        end
+    end
+
     math.randomseed(os.time())
     local process_id = math.random(10000, 99999)
     print("\n\n\n|>> MLSS Multiplayer started (ID: " .. process_id .. ")\n|>")
