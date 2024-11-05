@@ -24,7 +24,7 @@ each taking control of one Brother. The Brother at the front is responsible for 
 
 ## How to Install
 
-- Download the Script (release coming soon) or [Build from Source](#how-to-build-from-source)
+- Download the Script ([Releases](/releases/)) or [Build from Source](#how-to-build-from-source)
 - Open [BizHawk](https://tasvideos.org/BizHawk) (Tested on 2.9.1) and start the game
 - In BizHawk, open the Lua Console (Tools > Lua Console)
 - From the Console, open the Script (Script > Open Script...)
