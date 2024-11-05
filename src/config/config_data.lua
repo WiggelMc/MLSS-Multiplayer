@@ -159,7 +159,7 @@ function config_data.load()
         set_config_value(config, section, key, value)
     end
 
-    local errors = config_file.read(config_data.file_name, config_type_table, set_value)
+    local errors = config_file.read(config_data.file_name, config_type_table, {}, set_value)
 
     if (errors == nil) then
         return fix_config(config), nil

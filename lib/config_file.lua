@@ -149,9 +149,10 @@ end
 
 ---@param file_name string
 ---@param type_table table
+---@param dict_sections string[]
 ---@param set_value fun(section: string, key: string, value: any): nil
 ---@return string[]?
-function config_file.read(file_name, type_table, set_value)
+function config_file.read(file_name, type_table, dict_sections, set_value)
     local file = io.open(file_name, "r")
 
     if (file == nil) then
@@ -179,84 +180,88 @@ function config_file.read(file_name, type_table, set_value)
             current_section = result.name
             current_section_type_table = type_table[current_section]
         elseif (result.type == "Value") then
-            if (current_section_type_table ~= nil and current_section ~= nil) then
-                local value_type = current_section_type_table[result.key]
-                current_section_type_table[result.key] = "set"
-
-                if (value_type == nil) then
-                    table.insert(errors, "Section \""
-                        .. current_section
-                        .. "\" does does not accept the Key \""
-                        .. result.key
-                        .. "\" ["
-                        .. line_num
-                        .. "]: "
-                        .. string_helper.trim(line)
-                    )
-                elseif (value_type == "set") then
-                    table.insert(errors, "The Key \""
-                        .. result.key
-                        .. "\" was set twice in Section \""
-                        .. current_section
-                        .. "\" ["
-                        .. line_num
-                        .. "]: "
-                        .. string_helper.trim(line)
-                    )
-                elseif (value_type == "boolean") then
-                    if (result.value == "true") then
-                        set_value(current_section, result.key, true)
-                    elseif (result.value == "false") then
-                        set_value(current_section, result.key, false)
-                    else
-                        table.insert(errors, "The Key \""
-                            .. result.key
-                            .. "\" in Section \""
-                            .. current_section
-                            .. "\" only accepts the Values \"true\" or \"false\", but was provided \""
-                            .. result.value
-                            .. "\" ["
-                            .. line_num
-                            .. "]: "
-                            .. string_helper.trim(line)
-                        )
-                    end
-                elseif (value_type == "string") then
+            if (current_section ~= nil) then
+                if (table_helper.contains(dict_sections, current_section)) then
                     set_value(current_section, result.key, result.value)
-                elseif (value_type == "number") then
-                    local value = tonumber(result.value)
-                    if (value ~= nil) then
-                        set_value(current_section, result.key, value)
-                    else
-                        table.insert(errors, "The Key \""
-                            .. result.key
-                            .. "\" in Section \""
+                elseif (current_section_type_table ~= nil) then
+                    local value_type = current_section_type_table[result.key]
+                    current_section_type_table[result.key] = "set"
+
+                    if (value_type == nil) then
+                        table.insert(errors, "Section \""
                             .. current_section
-                            .. "\" only accepts integers, but was provided \""
-                            .. result.value
+                            .. "\" does does not accept the Key \""
+                            .. result.key
                             .. "\" ["
                             .. line_num
                             .. "]: "
                             .. string_helper.trim(line)
                         )
-                    end
-                elseif (type(value_type) == "table") then
-                    if (table_helper.contains(value_type, result.value)) then
+                    elseif (value_type == "set") then
+                        table.insert(errors, "The Key \""
+                            .. result.key
+                            .. "\" was set twice in Section \""
+                            .. current_section
+                            .. "\" ["
+                            .. line_num
+                            .. "]: "
+                            .. string_helper.trim(line)
+                        )
+                    elseif (value_type == "boolean") then
+                        if (result.value == "true") then
+                            set_value(current_section, result.key, true)
+                        elseif (result.value == "false") then
+                            set_value(current_section, result.key, false)
+                        else
+                            table.insert(errors, "The Key \""
+                                .. result.key
+                                .. "\" in Section \""
+                                .. current_section
+                                .. "\" only accepts the Values \"true\" or \"false\", but was provided \""
+                                .. result.value
+                                .. "\" ["
+                                .. line_num
+                                .. "]: "
+                                .. string_helper.trim(line)
+                            )
+                        end
+                    elseif (value_type == "string") then
                         set_value(current_section, result.key, result.value)
-                    else
-                        table.insert(errors, "The Key \""
-                            .. result.key
-                            .. "\" in Section \""
-                            .. current_section
-                            .. "\" only accepts any of "
-                            .. table_helper.format_list(value_type)
-                            .. ", but was provided \""
-                            .. result.value
-                            .. "\" ["
-                            .. line_num
-                            .. "]: "
-                            .. string_helper.trim(line)
-                        )
+                    elseif (value_type == "number") then
+                        local value = tonumber(result.value)
+                        if (value ~= nil) then
+                            set_value(current_section, result.key, value)
+                        else
+                            table.insert(errors, "The Key \""
+                                .. result.key
+                                .. "\" in Section \""
+                                .. current_section
+                                .. "\" only accepts integers, but was provided \""
+                                .. result.value
+                                .. "\" ["
+                                .. line_num
+                                .. "]: "
+                                .. string_helper.trim(line)
+                            )
+                        end
+                    elseif (type(value_type) == "table") then
+                        if (table_helper.contains(value_type, result.value)) then
+                            set_value(current_section, result.key, result.value)
+                        else
+                            table.insert(errors, "The Key \""
+                                .. result.key
+                                .. "\" in Section \""
+                                .. current_section
+                                .. "\" only accepts any of "
+                                .. table_helper.format_list(value_type)
+                                .. ", but was provided \""
+                                .. result.value
+                                .. "\" ["
+                                .. line_num
+                                .. "]: "
+                                .. string_helper.trim(line)
+                            )
+                        end
                     end
                 end
             end
