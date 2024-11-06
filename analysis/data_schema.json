@@ -5,16 +5,31 @@
     "sets": {
       "type": "array",
       "items": {
-        "type": "array",
-        "items": {
-          "type": "string",
-          "format": "uri-reference"
-        }
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "buckets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri-reference"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "buckets"
+        ]
       }
     },
     "verbose": {
       "type": "boolean"
     }
   },
-  "required": ["sets", "verbose"]
+  "required": [
+    "sets",
+    "verbose"
+  ]
 }
