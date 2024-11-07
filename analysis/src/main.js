@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { OrderedSet } from 'js-sdsl';
+import jsonStringify from "json-stringify-pretty-compact";
 
 /**
 * @typedef {object} SearchSet
@@ -52,9 +53,22 @@ function loadSearchSet(set) {
 }
 
 /**
+ * 
+ * @param {number} n
+ * @returns {string} 
+ */
+function formatHex(n) {
+    const digits = n.toString(16).toUpperCase()
+    const length = Math.ceil(digits.length / 2) * 2
+
+    return "0x" + digits.padStart(length, 0)
+}
+
+/**
  * @typedef {object} ByteAnalysisSet
  * @property {string} ByteAnalysisSet.name
  * @property {number[]} ByteAnalysisSet.values
+ * @property {Set<number>} ByteAnalysisSet.uniqueValues
  * @property {number} ByteAnalysisSet.valueComplexity
  */
 
@@ -104,8 +118,8 @@ function createByteAnalysis(countData, byte) {
     /** @type {Map<number, Set<string>>} */
     const overlapValues = new Map()
 
-    /** @type {ByteAnalysisSet[]} */
-    const analysisSets = []
+    /** @type {Map<string, ByteAnalysisSet>} */
+    const analysisSets = new Map()
 
     /** @type {number?} */
     let maxValueCount = null
@@ -123,9 +137,11 @@ function createByteAnalysis(countData, byte) {
         /** @type {number[]} */
         const values = Array.from(dataEntry1.byteCounts.keys())
         const valueComplexity = rateValueComplexity(values)
-        analysisSets.push({
+
+        analysisSets.set(dataEntry1.name, {
             name: dataEntry1.name,
             values: values,
+            uniqueValues: new Set(values),
             valueComplexity: valueComplexity
         })
 
@@ -151,17 +167,23 @@ function createByteAnalysis(countData, byte) {
             for (const [value, count] of dataEntry1.byteCounts.entries()) {
                 if (dataEntry2.byteCounts.has(value)) {
                     const overlapSet = overlapValues.get(value) ?? new Set()
-                    overlapSet.add(dataEntry1)
-                    overlapSet.add(dataEntry2)
+                    overlapSet.add(dataEntry1.name)
+                    overlapSet.add(dataEntry2.name)
                     overlapValues.set(value, overlapSet)
                 }
             }
         }
     }
 
+    for (const [value,entries] of overlapValues) {
+        for (const entry of entries) {
+            analysisSets.get(entry).uniqueValues.delete(value)
+        }
+    }
+
     return {
         byte: byte,
-        sets: analysisSets,
+        sets: Array.from(analysisSets.values()),
         overlapValues: overlapValues,
         minValueCount: minValueCount ?? 0,
         maxValueCount: maxValueCount ?? 0,
@@ -215,14 +237,14 @@ function main() {
         } else if (a.minValueComplexity !== b.minValueComplexity) {
             return a.minValueComplexity - b.minValueComplexity
 
-        } else if (a.minValueCount !== b.minValueCount) {
-            return a.minValueCount - b.minValueCount
+        } else if ((a.minValueCount - a.overlapValues.size) !== (b.minValueCount - b.overlapValues.size)) {
+            return (a.minValueCount - a.overlapValues.size) - (b.minValueCount - b.overlapValues.size)
 
         } else if (a.maxValueComplexity !== b.maxValueComplexity) {
             return a.maxValueComplexity - b.maxValueComplexity
 
-        } else if (a.maxValueCount !== b.maxValueCount) {
-            return a.maxValueCount - b.maxValueCount
+        } else if ((a.maxValueCount - a.overlapValues.size) !== (b.maxValueCount - b.overlapValues.size)) {
+            return (a.maxValueCount - a.overlapValues.size) - (b.maxValueCount - b.overlapValues.size)
 
         } else {
             return a.byte - b.byte
@@ -245,15 +267,30 @@ function main() {
     }
 
     const analysisOutputList = Array.from(analysisOutput)
-    const analysisOutputString = JSON.stringify(analysisOutputList, (key, value) => {
-        if (key.startsWith("min") || key.startsWith("max")) {
+
+    function replacer(key, value) {
+        if (value instanceof Map) {
+            const obj = {}
+            for (const [k, v] of value.entries()) {
+                if (typeof k === "number") {
+                    obj[formatHex(k)] = v
+                } else {
+                    obj[k.toString()] = v
+                }
+            }
+            return obj
+        } else if (value instanceof Set) {
+            return Array.from(value.keys())
+        } else if (key.startsWith("min") || key.startsWith("max") || key.endsWith("Complexity") ) {
             return value
         } else if (typeof value === "number"){
-            return "0x" + value.toString(16).toUpperCase()
+            return formatHex(value)
         } else {
             return value
         }
-    }, 4)
+    }
+
+    const analysisOutputString = jsonStringify(analysisOutputList, {indent: 4, maxLength: 100, replacer: replacer})
 
     fs.writeFileSync(outFilePath, analysisOutputString, {encoding: "utf-8", flag: "w"})
     console.log("Successfully analysed Data")
