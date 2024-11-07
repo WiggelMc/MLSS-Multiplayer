@@ -1,0 +1,19 @@
+{
+  "$schema": "../../data_schema.json",
+  "sets": [
+    {
+      "name": "field",
+      "buckets": [
+        "mario_field",
+        "luigi_field"
+      ]
+    },
+    {
+      "name": "cutscene",
+      "buckets": [
+        "cutscene"
+      ]
+    }
+  ],
+  "verbose": true
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "../../data_schema.json",
+  "sets": [
+    {
+      "name": "battle",
+      "buckets": [
+        "mario_battle",
+        "luigi_battle",
+        "enemy_battle"
+      ]
+    },
+    {
+      "name": "levelup",
+      "buckets": [
+        "mario_levelup",
+        "luigi_levelup"
+      ]
+    }
+  ],
+  "verbose": true
+}

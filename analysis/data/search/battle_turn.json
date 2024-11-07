@@ -1,0 +1,18 @@
+{
+  "$schema": "../../data_schema.json",
+  "sets": [
+    {
+      "name": "mario",
+      "buckets": [
+        "mario_battle"
+      ]
+    },
+    {
+      "name": "luigi",
+      "buckets": [
+        "luigi_battle"
+      ]
+    }
+  ],
+  "verbose": true
+}

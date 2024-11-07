@@ -1,0 +1,22 @@
+{
+  "$schema": "../../data_schema.json",
+  "sets": [
+    {
+      "name": "battle",
+      "buckets": [
+        "mario_battle",
+        "luigi_battle",
+        "enemy_battle"
+      ]
+    },
+    {
+      "name": "menu",
+      "buckets": [
+        "pause",
+        "textbox",
+        "cutscene"
+      ]
+    }
+  ],
+  "verbose": true
+}

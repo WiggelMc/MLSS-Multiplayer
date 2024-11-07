@@ -143,5 +143,7 @@ dist
 .pnp.*
 
 # analysis
-data
+data/*
+!data/search
+data/search/*.results.*
 out
