@@ -249,6 +249,85 @@ function replaceYAML(key, value) {
     }
 }
 
+/**
+ * @param {ByteAnalysis} analysis
+ * @returns {number}
+ */
+function computeMaxBitVariance(analysis) {
+    const max = 0
+
+    for (const set of analysis.sets) {
+        const all = set.values.reduce((a, b) => a & b)
+        const any = set.values.reduce((a, b) => a | b)
+        const same = (all | (~ any)) & 0xFF
+        const different = (~same) & 0xFF
+
+        const differentCount = different.toString(2).replace("0", "").length
+        if (differentCount > max) {
+            max = differentCount
+        }
+    }
+
+    return max
+}
+
+
+/**
+ * @param {ByteAnalysis} analysis
+ * @returns {number}
+ */
+function computeBitDistance(analysis) {
+    const values = analysis.sets.flatMap((set) => set.values)
+
+    const all = values.reduce((a, b) => a & b)
+    const any = values.reduce((a, b) => a | b)
+    const same = (all | (~ any)) & 0xFF
+    const different = (~same) & 0xFF
+
+    const differentCount = different.toString(2).replace("0", "").length
+    return differentCount
+}
+
+/**
+ * @param {ByteAnalysis} a
+ * @param {ByteAnalysis} b
+ * @returns {number}
+ */
+function orderAnalysis(a,b) {
+    if (a.overlapValues.size !== b.overlapValues.size) {
+        return a.overlapValues.size - b.overlapValues.size
+    } 
+    
+    let bitDistanceA = computeBitDistance(a)
+    if (a.minValueCount == 1 && a.maxValueCount == 1 && bitDistanceA == 8) {
+        bitDistanceA = 1
+    }
+
+    let bitDistanceB = computeBitDistance(b)
+    if (b.minValueCount == 1 && b.maxValueCount == 1 && bitDistanceB == 8) {
+        bitDistanceB = 1
+    }
+
+    if (bitDistanceA !== bitDistanceB) {
+        return bitDistanceA - bitDistanceB
+
+    } else if (a.minValueComplexity !== b.minValueComplexity) {
+        return a.minValueComplexity - b.minValueComplexity
+
+    } else if (a.minValueCount !== b.minValueCount) {
+        return a.minValueCount - b.minValueCount
+
+    } else if (a.maxValueComplexity !== b.maxValueComplexity) {
+        return a.maxValueComplexity - b.maxValueComplexity
+
+    } else if (a.maxValueCount !== b.maxValueCount) {
+        return a.maxValueCount - b.maxValueCount
+
+    } else {
+        return a.byte - b.byte
+    }
+}
+
 function main() {
     /** @type {string | undefined} */
     const filePath = process.argv[2]
@@ -281,33 +360,7 @@ function main() {
     const fileSize = byteCounts.get(searchData.sets[0].name)?.length ?? 0
 
     /** @type {OrderedSet<ByteAnalysis>} */
-    const analysisOutput = new OrderedSet([], 
-        /**
-         * @param {ByteAnalysis} a
-         * @param {ByteAnalysis} b
-         * @returns {number}
-         */
-        (a, b) => {
-
-        if (a.overlapValues.size !== b.overlapValues.size) {
-            return a.overlapValues.size - b.overlapValues.size
-
-        } else if (a.minValueComplexity !== b.minValueComplexity) {
-            return a.minValueComplexity - b.minValueComplexity
-
-        } else if ((a.minValueCount - a.overlapValues.size) !== (b.minValueCount - b.overlapValues.size)) {
-            return (a.minValueCount - a.overlapValues.size) - (b.minValueCount - b.overlapValues.size)
-
-        } else if (a.maxValueComplexity !== b.maxValueComplexity) {
-            return a.maxValueComplexity - b.maxValueComplexity
-
-        } else if ((a.maxValueCount - a.overlapValues.size) !== (b.maxValueCount - b.overlapValues.size)) {
-            return (a.maxValueCount - a.overlapValues.size) - (b.maxValueCount - b.overlapValues.size)
-
-        } else {
-            return a.byte - b.byte
-        }
-    })
+    const analysisOutput = new OrderedSet([], orderAnalysis)
 
     for (let i = 0; i < fileSize; i++) {
         /** @type {QualifiedByteCount[]} */
@@ -336,8 +389,8 @@ function main() {
 
     const shortAnalysisOutputString = YAML.stringify(simplifyAnalysis(analysisOutputList), replaceYAML, {
         indent: 4,
-        defaultKeyType: "BLOCK_LITERAL",
-        defaultStringType: "BLOCK_LITERAL",
+        defaultKeyType: "PLAIN",
+        defaultStringType: "PLAIN",
         collectionStyle: "block"
     })
 
