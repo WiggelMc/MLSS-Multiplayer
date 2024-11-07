@@ -82,6 +82,7 @@ function formatHex(n) {
 * @property {number} ByteAnalysis.maxValueCount
 * @property {number} ByteAnalysis.minValueComplexity
 * @property {number} ByteAnalysis.maxValueComplexity
+* @property {number} ByteAnalysis.bitDistance
 */
 
 /**
@@ -182,14 +183,22 @@ function createByteAnalysis(countData, byte) {
         }
     }
 
+    const sets = Array.from(analysisSets.values())
+
+    let bitDistance = computeBitDistance(sets)
+    if (minValueCount == 1 && maxValueCount == 1 && bitDistance == 8) {
+        bitDistance = 1
+    }
+
     return {
         byte: byte,
-        sets: Array.from(analysisSets.values()),
+        sets: sets,
         overlapValues: overlapValues,
         minValueCount: minValueCount ?? 0,
         maxValueCount: maxValueCount ?? 0,
         maxValueComplexity: maxValueComplexity ?? 0,
-        minValueComplexity: minValueComplexity ?? 0
+        minValueComplexity: minValueComplexity ?? 0,
+        bitDistance: bitDistance
     }
 }
 
@@ -232,9 +241,9 @@ function replacerJSON(key, value) {
         return obj
     } else if (value instanceof Set) {
         return Array.from(value.keys())
-    } else if (key.startsWith("min") || key.startsWith("max") || key.endsWith("Complexity") ) {
+    } else if (key.startsWith("min") || key.startsWith("max") || key == "valueComplexity" || key == "bitDistance" ) {
         return value
-    } else if (typeof value === "number"){
+    } else if (typeof value === "number") {
         return formatHex(value)
     } else {
         return value
@@ -250,34 +259,11 @@ function replaceYAML(key, value) {
 }
 
 /**
- * @param {ByteAnalysis} analysis
+ * @param {ByteAnalysisSet[]} sets
  * @returns {number}
  */
-function computeMaxBitVariance(analysis) {
-    const max = 0
-
-    for (const set of analysis.sets) {
-        const all = set.values.reduce((a, b) => a & b)
-        const any = set.values.reduce((a, b) => a | b)
-        const same = (all | (~ any)) & 0xFF
-        const different = (~same) & 0xFF
-
-        const differentCount = different.toString(2).replace("0", "").length
-        if (differentCount > max) {
-            max = differentCount
-        }
-    }
-
-    return max
-}
-
-
-/**
- * @param {ByteAnalysis} analysis
- * @returns {number}
- */
-function computeBitDistance(analysis) {
-    const values = analysis.sets.flatMap((set) => set.values)
+function computeBitDistance(sets) {
+    const values = sets.flatMap((set) => set.values)
 
     const all = values.reduce((a, b) => a & b)
     const any = values.reduce((a, b) => a | b)
@@ -296,20 +282,9 @@ function computeBitDistance(analysis) {
 function orderAnalysis(a,b) {
     if (a.overlapValues.size !== b.overlapValues.size) {
         return a.overlapValues.size - b.overlapValues.size
-    } 
-    
-    let bitDistanceA = computeBitDistance(a)
-    if (a.minValueCount == 1 && a.maxValueCount == 1 && bitDistanceA == 8) {
-        bitDistanceA = 1
-    }
 
-    let bitDistanceB = computeBitDistance(b)
-    if (b.minValueCount == 1 && b.maxValueCount == 1 && bitDistanceB == 8) {
-        bitDistanceB = 1
-    }
-
-    if (bitDistanceA !== bitDistanceB) {
-        return bitDistanceA - bitDistanceB
+    } else if (a.bitDistance !== b.bitDistance) {
+        return a.bitDistance - b.bitDistance
 
     } else if (a.minValueComplexity !== b.minValueComplexity) {
         return a.minValueComplexity - b.minValueComplexity
