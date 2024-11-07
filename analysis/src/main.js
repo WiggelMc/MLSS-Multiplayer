@@ -1,5 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { OrderedSet } from 'js-sdsl';
 
 /**
 * @typedef {object} SearchSet
@@ -14,29 +15,34 @@ import * as path from 'node:path';
 */
 
 /**
-* @typedef {Map<string, number[][]>} ByteCounts
+* @typedef {Map<string, Map<number,number>[]>} ByteCounts
 */
 
 /**
  * 
  * @param {SearchSet} set
- * @returns {number[][]}
+ * @returns {Map<number,number>[]}
  */
 function loadSearchSet(set) {
+    /** @type {Map<number,number>[]} */
     const byteCounts = []
 
     for (const dirName of set.buckets) {
-        const dirPath = path.join("/data/buckets/", dirName)
+        const dirPath = path.join(path.dirname(import.meta.dirname), "/data/buckets/", dirName)
 
         for (const fileName of fs.readdirSync(dirPath)) {
-            const filePath = path.resolve(dirPath, fileName)
+            const filePath = path.join(dirPath, fileName)
+
+            if (!fileName.endsWith(".bin")) {
+                continue
+            }
 
             const buffer = fs.readFileSync(filePath, {flag: "r"})
             for (const [i, byte] of buffer.entries()) {
                 
-                const byteCount = byteCounts[i] ?? []
-                byteCount[byte] = (byteCount[byte] ?? 0) + 1
-    
+                const byteCount = byteCounts[i] ?? new Map()
+                byteCount.set(byte, (byteCount.get(byte) ?? 0) + 1)
+
                 byteCounts[i] = byteCount
             }
         }
@@ -46,26 +52,122 @@ function loadSearchSet(set) {
 }
 
 /**
+ * @typedef {object} ByteAnalysisSet
+ * @property {string} ByteAnalysisSet.name
+ * @property {number[]} ByteAnalysisSet.values
+ * @property {number} ByteAnalysisSet.valueComplexity
+ */
+
+/**
 * @typedef {object} ByteAnalysis
+* @property {number} ByteAnalysis.byte
+* @property {ByteAnalysisSet[]} ByteAnalysis.sets
+* @property {Map<number, Set<string>>} ByteAnalysis.overlapValues
+* @property {number} ByteAnalysis.minValueCount
+* @property {number} ByteAnalysis.maxValueCount
+* @property {number} ByteAnalysis.minValueComplexity
+* @property {number} ByteAnalysis.maxValueComplexity
 */
 
 /**
 * @typedef {object} QualifiedByteCount
 * @property {string} QualifiedByteCount.name
-* @property {number[]} QualifiedByteCount.byteCounts 
+* @property {Map<number,number>} QualifiedByteCount.byteCounts 
 */
 
 /**
- * 
+ * @param {number[]} values
+ * @returns {number}
+ */
+function rateValueComplexity(values) {
+    const sum = values.map(v => {
+        if (v === 0x00 || v === 0x01 || v === 0xFE || v === 0xFF) {
+            return 1
+        } else {
+            const distanceTowardEdge = Math.min(v, 0xFF - v)
+            return distanceTowardEdge * distanceTowardEdge
+        }
+    }).reduce((acc, v) => acc + v, 0)
+
+    return sum / values.length
+}
+
+/**
  * @param {QualifiedByteCount[]} countData
+ * @param {number} byte
  * @returns {ByteAnalysis}
  */
-function createByteAnalysis(countData) {
-    for (const dataEntry of countData) {
-        
+function createByteAnalysis(countData, byte) {
+    /** @type {Set<QualifiedByteCount>} */
+    const loopedEntries = new Set()
+    
+    /** @type {Map<number, Set<string>>} */
+    const overlapValues = new Map()
+
+    /** @type {ByteAnalysisSet[]} */
+    const analysisSets = []
+
+    /** @type {number?} */
+    let maxValueCount = null
+    /** @type {number?} */
+    let minValueCount = null
+    /** @type {number?} */
+    let maxValueComplexity = null
+    /** @type {number?} */
+    let minValueComplexity = null
+
+
+    for (const dataEntry1 of countData) {
+        loopedEntries.add(dataEntry1)
+
+        /** @type {number[]} */
+        const values = Array.from(dataEntry1.byteCounts.keys())
+        const valueComplexity = rateValueComplexity(values)
+        analysisSets.push({
+            name: dataEntry1.name,
+            values: values,
+            valueComplexity: valueComplexity
+        })
+
+        if (maxValueCount === null || values.length > maxValueCount) {
+            maxValueCount = values.length
+        }
+        if (minValueCount === null || values.length < minValueCount) {
+            minValueCount = values.length
+        }
+        if (maxValueComplexity === null || valueComplexity > maxValueComplexity) {
+            maxValueComplexity = valueComplexity
+        }
+        if (minValueComplexity === null || valueComplexity < minValueComplexity) {
+            minValueComplexity = valueComplexity
+        }
+
+
+        for (const dataEntry2 of countData) {
+            if (loopedEntries.has(dataEntry2)) {
+                continue
+            }
+
+            for (const [value, count] of dataEntry1.byteCounts.entries()) {
+                if (dataEntry2.byteCounts.has(value)) {
+                    const overlapSet = overlapValues.get(value) ?? new Set()
+                    overlapSet.add(dataEntry1)
+                    overlapSet.add(dataEntry2)
+                    overlapValues.set(value, overlapSet)
+                }
+            }
+        }
     }
-    //TODO
-    return {}
+
+    return {
+        byte: byte,
+        sets: analysisSets,
+        overlapValues: overlapValues,
+        minValueCount: minValueCount ?? 0,
+        maxValueCount: maxValueCount ?? 0,
+        maxValueComplexity: maxValueComplexity ?? 0,
+        minValueComplexity: minValueComplexity ?? 0
+    }
 }
 
 function main() {
@@ -98,6 +200,35 @@ function main() {
 
     const fileSize = byteCounts.get(searchData.sets[0].name)?.length ?? 0
 
+    /** @type {OrderedSet<ByteAnalysis>} */
+    const analysisOutput = new OrderedSet([], 
+        /**
+         * @param {ByteAnalysis} a
+         * @param {ByteAnalysis} b
+         * @returns {number}
+         */
+        (a, b) => {
+
+        if (a.overlapValues.size !== b.overlapValues.size) {
+            return a.overlapValues.size - b.overlapValues.size
+
+        } else if (a.minValueComplexity !== b.minValueComplexity) {
+            return a.minValueComplexity - b.minValueComplexity
+
+        } else if (a.minValueCount !== b.minValueCount) {
+            return a.minValueCount - b.minValueCount
+
+        } else if (a.maxValueComplexity !== b.maxValueComplexity) {
+            return a.maxValueComplexity - b.maxValueComplexity
+
+        } else if (a.maxValueCount !== b.maxValueCount) {
+            return a.maxValueCount - b.maxValueCount
+
+        } else {
+            return a.byte - b.byte
+        }
+    })
+
     for (let i = 0; i < fileSize; i++) {
         /** @type {QualifiedByteCount[]} */
         const countData = []
@@ -108,19 +239,23 @@ function main() {
                 byteCounts: byteCounts.get(set.name)?.[i] ?? []
             })
         }
-    
-        const byteAnalysis = createByteAnalysis(countData)
-        //TODO: push into sorted Set
+        
+        const byteAnalysis = createByteAnalysis(countData, i)
+        analysisOutput.insert(byteAnalysis)
     }
 
-   
-    console.log(searchData)
+    const analysisOutputList = Array.from(analysisOutput)
+    const analysisOutputString = JSON.stringify(analysisOutputList, (key, value) => {
+        if (key.startsWith("min") || key.startsWith("max")) {
+            return value
+        } else if (typeof value === "number"){
+            return "0x" + value.toString(16).toUpperCase()
+        } else {
+            return value
+        }
+    }, 4)
 
-    
-
-
-
-    fs.writeFileSync(outFilePath, JSON.stringify(searchData), {encoding: "utf-8", flag: "w"})
+    fs.writeFileSync(outFilePath, analysisOutputString, {encoding: "utf-8", flag: "w"})
     console.log("Successfully analysed Data")
     console.log(`Log File Generated: ${outFilePath}`)
 }
