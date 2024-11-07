@@ -2,6 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { OrderedSet } from 'js-sdsl';
 import jsonStringify from "json-stringify-pretty-compact";
+import YAML from 'yaml'
 
 /**
 * @typedef {object} SearchSet
@@ -192,6 +193,62 @@ function createByteAnalysis(countData, byte) {
     }
 }
 
+
+/**
+ * @param {ByteAnalysis[]} list
+ * @returns {object}
+ */
+function simplifyAnalysis(list) {
+    const output = {}
+    for (const analysis of list) {
+        if (analysis.overlapValues.size > 0) {
+            continue
+        }
+
+        const analysisObj = {}
+        for (const set of analysis.sets) {
+            if (set.values.length == 1) {
+                analysisObj[set.name] = set.values[0]
+            } else {
+                analysisObj[set.name] = set.values
+            }
+        }
+        output[formatHex(analysis.byte)] = analysisObj
+    }
+
+    return output
+}
+
+function replacerJSON(key, value) {
+    if (value instanceof Map) {
+        const obj = {}
+        for (const [k, v] of value.entries()) {
+            if (typeof k === "number") {
+                obj[formatHex(k)] = v
+            } else {
+                obj[k.toString()] = v
+            }
+        }
+        return obj
+    } else if (value instanceof Set) {
+        return Array.from(value.keys())
+    } else if (key.startsWith("min") || key.startsWith("max") || key.endsWith("Complexity") ) {
+        return value
+    } else if (typeof value === "number"){
+        return formatHex(value)
+    } else {
+        return value
+    }
+}
+
+function replaceYAML(key, value) {
+    if (typeof value === "number"){
+        return formatHex(value)
+    } else {
+        return value
+    }
+}
+
 function main() {
     /** @type {string | undefined} */
     const filePath = process.argv[2]
@@ -206,7 +263,8 @@ function main() {
         return
     }
 
-    const outFilePath = path.join(path.dirname(filePath), path.basename(filePath, ".json") + ".results.log")
+    const outFilePath = path.join(path.dirname(filePath), path.basename(filePath, ".json") + ".results.verbose.json")
+    const shortOutFilePath = path.join(path.dirname(filePath), path.basename(filePath, ".json") + ".results.short.yml")
     const fileContent = fs.readFileSync(filePath, {encoding: "utf-8", flag: "r"})
 
     
@@ -268,33 +326,23 @@ function main() {
 
     const analysisOutputList = Array.from(analysisOutput)
 
-    function replacer(key, value) {
-        if (value instanceof Map) {
-            const obj = {}
-            for (const [k, v] of value.entries()) {
-                if (typeof k === "number") {
-                    obj[formatHex(k)] = v
-                } else {
-                    obj[k.toString()] = v
-                }
-            }
-            return obj
-        } else if (value instanceof Set) {
-            return Array.from(value.keys())
-        } else if (key.startsWith("min") || key.startsWith("max") || key.endsWith("Complexity") ) {
-            return value
-        } else if (typeof value === "number"){
-            return formatHex(value)
-        } else {
-            return value
-        }
+    console.log("Successfully analysed Data")
+
+    if (searchData.verbose) {
+        const analysisOutputString = jsonStringify(analysisOutputList, {indent: 4, maxLength: 100, replacer: replacerJSON})
+        fs.writeFileSync(outFilePath, analysisOutputString, {encoding: "utf-8", flag: "w"})
+        console.log(`Verbose Log File Generated: ${outFilePath}`)
     }
 
-    const analysisOutputString = jsonStringify(analysisOutputList, {indent: 4, maxLength: 100, replacer: replacer})
+    const shortAnalysisOutputString = YAML.stringify(simplifyAnalysis(analysisOutputList), replaceYAML, {
+        indent: 4,
+        defaultKeyType: "BLOCK_LITERAL",
+        defaultStringType: "BLOCK_LITERAL",
+        collectionStyle: "block"
+    })
 
-    fs.writeFileSync(outFilePath, analysisOutputString, {encoding: "utf-8", flag: "w"})
-    console.log("Successfully analysed Data")
-    console.log(`Log File Generated: ${outFilePath}`)
+    fs.writeFileSync(shortOutFilePath, shortAnalysisOutputString, {encoding: "utf-8", flag: "w"})
+    console.log(`Log File Generated: ${shortOutFilePath}`)    
 }
 
 main()

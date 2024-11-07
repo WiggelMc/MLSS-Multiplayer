@@ -12,6 +12,7 @@
   "dependencies": {
     "js-sdsl": "^4.4.2",
     "json-stringify-pretty-compact": "^4.0.0",
-    "luabundler": "^1.2.3"
+    "luabundler": "^1.2.3",
+    "yaml": "^2.6.0"
   }
 }
