@@ -21,7 +21,8 @@ end
 ---@field is_pause_screen_open boolean # True if the Pause Screen is open (Select)
 ---@field is_dialog_open boolean # True if a Dialog Box is Open (Textbox, Battle)
 ---@field is_movement_disabled boolean # True if you cannot move with the Dpad
----@field front_player_index integer # Front Player in the Overworld (1: Mario / 2: Luigi)
+---@field front_player_index integer # Front Player in the Overworld (0x01: Mario / 0x02: Luigi)
+---@field battle_turn_player integer # Active Player in Battle (0x98: Mario / 0x99: Luigi // other: Enemy)
 
 ---@return ByteData
 function byte_data.read_byte_data()
@@ -33,12 +34,12 @@ function byte_data.read_byte_data()
         is_dialog_open = read_bit(0x03D1, 4),
         is_movement_disabled = read_bit(0x2451, 0),
         front_player_index = read_byte(0x241C),
-        battle_turn_player_1 = read_byte(0x7B47),
-        battle_turn_player_2 = read_byte(0x7B74),
-        battle_turn_player_3 = read_byte(0x0389),
-        battle_turn_player_4 = read_byte(0x7B4E),
-        battle_turn_player_5 = read_byte(0x037B),
-        battle_turn_player_6 = read_byte(0x7B05),
+        battle_turn_player = read_byte(0x3FC9),
+        data_misc_1 = read_byte(0x7C4D),
+        data_misc_2 = read_byte(0x7B59),
+        data_misc_3 = read_byte(0x7B4E),
+        data_misc_4 = read_byte(0x037B),
+        data_misc_5 = read_byte(0x7B05),
     }
 end
 
