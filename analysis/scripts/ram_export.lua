@@ -20,23 +20,28 @@ local function export_ram(bucket_name)
     local timestamp = os.date("%Y_%m_%d_t%H_%M_%S", os.time())
     local filename = "../data/generated/" .. bucket_name .. "/ram_" .. timestamp .. "_i" .. id
 
-    local bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
+    local iwram_bytes = memory.read_bytes_as_array(0x0000, 0x7FFF, "IWRAM")
+    local ewram_bytes = memory.read_bytes_as_array(0x0000, 0x03FFFF, "EWRAM")
 
     client.screenshot(filename .. ".png")
     savestate.save(filename .. ".State", true)
-    local file = io.open(filename .. ".bin", "wb")
+    local iwram_file = io.open(filename .. ".iw.bin", "wb")
+    local ewram_file = io.open(filename .. ".ew.bin", "wb")
 
-    if (file == nil) then
+    if (iwram_file == nil or ewram_file == nil) then
         print("Error: File could not be created (" .. filename .. ")")
         gui.addmessage("ERROR: [" .. bucket_name .. "] File could not be created: " .. bucket_name)
         return
     end
 
-    file:write(string.char(table.unpack(bytes)))
+    iwram_file:write(string.char(table.unpack(iwram_bytes)))
+    ewram_file:write(string.char(table.unpack(ewram_bytes)))
     gui.addmessage("[" .. bucket_name .. "] Saved File in /" .. bucket_name .. "/")
 
-    file:flush()
-    file:close()
+    iwram_file:flush()
+    iwram_file:close()
+    ewram_file:flush()
+    ewram_file:close()
 end
 
 ---@return nil

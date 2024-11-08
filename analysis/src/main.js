@@ -21,11 +21,16 @@ import YAML from 'yaml'
 */
 
 /**
+ * @typedef {"IWRAM" | "EWRAM"} RamDomain
+ */
+
+/**
  * 
  * @param {SearchSet} set
+ * @param {RamDomain} domain
  * @returns {Map<number,number>[]}
  */
-function loadSearchSet(set) {
+function loadSearchSet(set, domain) {
     /** @type {Map<number,number>[]} */
     const byteCounts = []
 
@@ -35,13 +40,24 @@ function loadSearchSet(set) {
         for (const fileName of fs.readdirSync(dirPath)) {
             const filePath = path.join(dirPath, fileName)
 
-            if (!fileName.endsWith(".bin")) {
-                continue
+            switch (domain) {
+                case "IWRAM":
+                    if (!fileName.endsWith(".iw.bin")) {
+                        continue
+                    }
+                    break
+                case "EWRAM":
+                    if (!fileName.endsWith(".ew.bin")) {
+                        continue
+                    }
+                    break
+                default:
+                    continue
             }
 
-            const buffer = fs.readFileSync(filePath, {flag: "r"})
+            const buffer = fs.readFileSync(filePath, { flag: "r" })
             for (const [i, byte] of buffer.entries()) {
-                
+
                 const byteCount = byteCounts[i] ?? new Map()
                 byteCount.set(byte, (byteCount.get(byte) ?? 0) + 1)
 
@@ -116,7 +132,7 @@ function rateValueComplexity(values) {
 function createByteAnalysis(countData, byte) {
     /** @type {Set<QualifiedByteCount>} */
     const loopedEntries = new Set()
-    
+
     /** @type {Map<number, Set<string>>} */
     const overlapValues = new Map()
 
@@ -177,7 +193,7 @@ function createByteAnalysis(countData, byte) {
         }
     }
 
-    for (const [value,entries] of overlapValues) {
+    for (const [value, entries] of overlapValues) {
         for (const entry of entries) {
             analysisSets.get(entry).uniqueValues.delete(value)
         }
@@ -241,7 +257,7 @@ function replacerJSON(key, value) {
         return obj
     } else if (value instanceof Set) {
         return Array.from(value.keys())
-    } else if (key.startsWith("min") || key.startsWith("max") || key == "valueComplexity" || key == "bitDistance" ) {
+    } else if (key.startsWith("min") || key.startsWith("max") || key == "valueComplexity" || key == "bitDistance") {
         return value
     } else if (typeof value === "number") {
         return formatHex(value)
@@ -251,7 +267,7 @@ function replacerJSON(key, value) {
 }
 
 function replaceYAML(key, value) {
-    if (typeof value === "number"){
+    if (typeof value === "number") {
         return formatHex(value)
     } else {
         return value
@@ -267,7 +283,7 @@ function computeBitDistance(sets) {
 
     const all = values.reduce((a, b) => a & b)
     const any = values.reduce((a, b) => a | b)
-    const same = (all | (~ any)) & 0xFF
+    const same = (all | (~any)) & 0xFF
     const different = (~same) & 0xFF
 
     const differentCount = different.toString(2).replace("0", "").length
@@ -279,7 +295,7 @@ function computeBitDistance(sets) {
  * @param {ByteAnalysis} b
  * @returns {number}
  */
-function orderAnalysis(a,b) {
+function orderAnalysis(a, b) {
     if (a.overlapValues.size !== b.overlapValues.size) {
         return a.overlapValues.size - b.overlapValues.size
 
@@ -303,6 +319,77 @@ function orderAnalysis(a,b) {
     }
 }
 
+/**
+ * @param {string} filePath
+ * @param {SearchFile} searchData
+ * @param {RamDomain} domain
+ */
+function analyseDomain(filePath, searchData, domain) {
+    /** @type {string} */
+    let domainExt
+    switch (domain) {
+        case "IWRAM":
+            domainExt = "iw"
+            break;
+        case "EWRAM":
+            domainExt = "ew"
+            break;
+        default:
+            domainExt = "other"
+    }
+
+    const outFilePath = path.join(path.dirname(filePath), path.basename(filePath, ".json") + ".results." + domainExt + ".verbose.json")
+    const shortOutFilePath = path.join(path.dirname(filePath), path.basename(filePath, ".json") + ".results." + domainExt + ".short.yml")
+
+
+    /** @type {ByteCounts} */
+    const byteCounts = new Map()
+
+    for (const set of searchData.sets) {
+        byteCounts.set(set.name, loadSearchSet(set, domain))
+    }
+
+    const fileSize = byteCounts.get(searchData.sets[0].name)?.length ?? 0
+
+    /** @type {OrderedSet<ByteAnalysis>} */
+    const analysisOutput = new OrderedSet([], orderAnalysis)
+
+    for (let i = 0; i < fileSize; i++) {
+        /** @type {QualifiedByteCount[]} */
+        const countData = []
+
+        for (const set of searchData.sets) {
+            countData.push({
+                name: set.name,
+                byteCounts: byteCounts.get(set.name)?.[i] ?? []
+            })
+        }
+
+        const byteAnalysis = createByteAnalysis(countData, i)
+        analysisOutput.insert(byteAnalysis)
+    }
+
+    const analysisOutputList = Array.from(analysisOutput)
+
+    console.log("Successfully analysed Data")
+
+    if (searchData.verbose) {
+        const analysisOutputString = jsonStringify(analysisOutputList, { indent: 4, maxLength: 100, replacer: replacerJSON })
+        fs.writeFileSync(outFilePath, analysisOutputString, { encoding: "utf-8", flag: "w" })
+        console.log(`Verbose Log File Generated: ${outFilePath}`)
+    }
+
+    const shortAnalysisOutputString = YAML.stringify(simplifyAnalysis(analysisOutputList), replaceYAML, {
+        indent: 4,
+        defaultKeyType: "PLAIN",
+        defaultStringType: "PLAIN",
+        collectionStyle: "block"
+    })
+
+    fs.writeFileSync(shortOutFilePath, shortAnalysisOutputString, { encoding: "utf-8", flag: "w" })
+    console.log(`Log File Generated: ${shortOutFilePath}`)
+}
+
 function main() {
     /** @type {string | undefined} */
     const filePath = process.argv[2]
@@ -317,60 +404,16 @@ function main() {
         return
     }
 
-    const outFilePath = path.join(path.dirname(filePath), path.basename(filePath, ".json") + ".results.verbose.json")
-    const shortOutFilePath = path.join(path.dirname(filePath), path.basename(filePath, ".json") + ".results.short.yml")
-    const fileContent = fs.readFileSync(filePath, {encoding: "utf-8", flag: "r"})
+    const fileContent = fs.readFileSync(filePath, { encoding: "utf-8", flag: "r" })
 
-    
+
     /** @type {SearchFile} */
     const searchData = JSON.parse(fileContent)
 
-    /** @type {ByteCounts} */
-    const byteCounts = new Map()
+    analyseDomain(filePath, searchData, "IWRAM")
+    analyseDomain(filePath, searchData, "EWRAM")
 
-    for (const set of searchData.sets) {
-        byteCounts.set(set.name, loadSearchSet(set))
-    }
-
-    const fileSize = byteCounts.get(searchData.sets[0].name)?.length ?? 0
-
-    /** @type {OrderedSet<ByteAnalysis>} */
-    const analysisOutput = new OrderedSet([], orderAnalysis)
-
-    for (let i = 0; i < fileSize; i++) {
-        /** @type {QualifiedByteCount[]} */
-        const countData = []
-        
-        for (const set of searchData.sets) {
-            countData.push({
-                name: set.name,
-                byteCounts: byteCounts.get(set.name)?.[i] ?? []
-            })
-        }
-        
-        const byteAnalysis = createByteAnalysis(countData, i)
-        analysisOutput.insert(byteAnalysis)
-    }
-
-    const analysisOutputList = Array.from(analysisOutput)
-
-    console.log("Successfully analysed Data")
-
-    if (searchData.verbose) {
-        const analysisOutputString = jsonStringify(analysisOutputList, {indent: 4, maxLength: 100, replacer: replacerJSON})
-        fs.writeFileSync(outFilePath, analysisOutputString, {encoding: "utf-8", flag: "w"})
-        console.log(`Verbose Log File Generated: ${outFilePath}`)
-    }
-
-    const shortAnalysisOutputString = YAML.stringify(simplifyAnalysis(analysisOutputList), replaceYAML, {
-        indent: 4,
-        defaultKeyType: "PLAIN",
-        defaultStringType: "PLAIN",
-        collectionStyle: "block"
-    })
-
-    fs.writeFileSync(shortOutFilePath, shortAnalysisOutputString, {encoding: "utf-8", flag: "w"})
-    console.log(`Log File Generated: ${shortOutFilePath}`)    
+    console.log("Analysis completed")
 }
 
 main()

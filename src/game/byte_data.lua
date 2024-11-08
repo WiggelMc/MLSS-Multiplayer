@@ -32,7 +32,13 @@ function byte_data.read_byte_data()
         is_pause_screen_open = read_bit(0x0D5E, 0),
         is_dialog_open = read_bit(0x03D1, 4),
         is_movement_disabled = read_bit(0x2451, 0),
-        front_player_index = read_byte(0x241C)
+        front_player_index = read_byte(0x241C),
+        battle_turn_player_1 = read_byte(0x7B47),
+        battle_turn_player_2 = read_byte(0x7B74),
+        battle_turn_player_3 = read_byte(0x0389),
+        battle_turn_player_4 = read_byte(0x7B4E),
+        battle_turn_player_5 = read_byte(0x037B),
+        battle_turn_player_6 = read_byte(0x7B05),
     }
 end
 
